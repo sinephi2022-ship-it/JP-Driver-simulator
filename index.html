@@ -70,30 +70,46 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
 #gear{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:transparent;font:700 24px/1 var(--f-num)}
 #gear.rev{color:var(--amber);border-color:var(--amber)}
 
-.pad{position:absolute;bottom:6px;display:none;gap:8px;pointer-events:auto;align-items:end}
-.pad.l{left:0}.pad.r{right:0}
-.pad button{width:64px;height:64px;border-radius:14px;background:var(--panel);border:1px solid var(--line);font:700 15px/1.1 var(--f-display);touch-action:none;user-select:none;-webkit-user-select:none}
-.pad button:active{background:rgba(255,255,255,.25)}
-.pad .brake{border-color:var(--sign-red)}.pad .gas{border-color:var(--go);height:84px}
-.pad .col{display:grid;gap:8px}
-.pad .sm{height:38px;font-size:12px}
 @media (hover:hover) and (pointer:fine){#dash.fp,#map.fp{display:none}}
-@media (hover:none),(pointer:coarse){.pad{display:flex}.card .keys{display:none}}
+@media (hover:none),(pointer:coarse){.card .keys{display:none}}
 #app{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .overlay{touch-action:pan-y}
 .steer{width:min(200px,44vw);height:72px;border-radius:36px;background:var(--panel);border:1px solid var(--line);position:relative;touch-action:none}
 .steer::before,.steer::after{position:absolute;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px}
 .steer::before{content:"◀";left:12px}.steer::after{content:"▶";right:12px}
 .knob{position:absolute;top:7px;left:50%;width:56px;height:56px;margin-left:-28px;border-radius:50%;background:var(--paper);box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:1}
-.pad .brake{width:76px;height:76px}.pad .gas{width:76px;height:100px}
+.ctl{position:absolute;left:0;right:0;bottom:6px;display:none;align-items:flex-end;justify-content:space-between;gap:8px;pointer-events:none}
+.gcol{display:grid;gap:8px;position:relative;pointer-events:auto}
+#gearBtn{width:70px;height:70px;border-radius:16px;background:var(--panel);border:2px solid var(--go);font:700 32px/1 var(--f-num);touch-action:none;display:grid;place-items:center;position:relative}
+#gearBtn.rev{border-color:var(--amber);color:var(--amber)}
+#gearBtn i{position:absolute;right:6px;top:5px;font:400 12px/1 sans-serif;color:var(--muted)}
+#hbBtn{width:70px;height:46px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font:700 14px/1 var(--f-display)}
+#hbBtn.on{background:var(--sign-red);border-color:var(--sign-red);color:#fff}
+#gearStrip{position:absolute;bottom:100%;left:0;margin-bottom:8px;width:70px;display:grid;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+#gearStrip span{height:36px;display:grid;place-items:center;font:700 20px/1 var(--f-num);color:var(--muted)}
+#gearStrip span.on{background:var(--go);color:#06241b}
+#wheelZone{flex:1;min-width:0;max-width:330px;height:min(200px,44vh);margin-inline:auto;position:relative;pointer-events:auto;touch-action:none}
+#ring{position:absolute;left:50%;bottom:0;height:88%;aspect-ratio:1;max-width:100%;transform:translateX(-50%) rotate(var(--rot,0deg));border:3px dashed rgba(255,255,255,.4);border-radius:50%;pointer-events:none}
+#ring i{position:absolute;top:-8px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--amber)}
+#tbL,#tbR{position:absolute;top:0;background:var(--panel)}#tbL{left:0}#tbR{right:0}
+.scol{display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:auto}
+.tspd{display:none;text-align:center;min-width:46px}.tspd b{font:700 30px/1 var(--f-num);font-variant-numeric:tabular-nums;display:block}.tspd b.over{color:var(--sign-red)}.tspd small{font-size:10px;color:var(--muted)}
+.stick{width:132px;height:132px;border-radius:50%;background:var(--panel);border:1px solid var(--line);position:relative;touch-action:none}
+.stick span{position:absolute;font:700 12px/1 var(--f-display);color:var(--muted);pointer-events:none}
+.stick .u{top:8px;left:50%;transform:translateX(-50%)}.stick .d{bottom:8px;left:50%;transform:translateX(-50%)}
+.stick .lft{left:9px;top:50%;transform:translateY(-50%)}.stick .rgt{right:9px;top:50%;transform:translateY(-50%)}
+.nub{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:var(--paper);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.cap{font-size:10px;line-height:1.2;color:var(--paper);text-align:center;max-width:140px;text-shadow:0 1px 3px #000}
+#hb{font:700 15px/1 var(--f-num);color:#4d5a69}#hb.on{color:#fff;background:var(--sign-red);border-color:var(--sign-red)}
 .touchOnly{display:none}
 @media (hover:none),(pointer:coarse){
   .touchOnly{display:block}
   .mini{min-height:36px;padding:6px 12px}
-  .blk,#gear{width:50px;height:50px}
-  #dash{bottom:6px}
+  .blk{width:50px;height:50px}
+  #dash,#sndBtn,#endBtn{display:none}
+  .ctl{display:flex}.tspd{display:block}
 }
-@media (hover:none) and (max-width:640px),(pointer:coarse) and (max-width:640px){#dash{bottom:118px}}
+@media (max-width:480px){.stick{width:108px;height:108px}#gearBtn,#hbBtn{width:60px}#gearStrip{width:60px}.cap{font-size:9px;max-width:112px}}
 @media (max-height:480px){
   #hud{padding-block:6px}
   #status{padding:5px 8px;gap:8px}.limit{width:38px;height:38px;border-width:5px;font-size:18px}.score b{font-size:22px}
@@ -102,7 +118,7 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
   #map{width:86px}
   #toasts{top:70px;width:min(260px,40vw)}.toast p{display:none}
   .spd b{font-size:34px}.spd{min-width:64px}#dash{padding:4px 10px;gap:8px}
-  .pad .gas{height:84px}.pad .brake{height:68px}.steer{height:64px}.knob{width:50px;height:50px;margin-left:-25px}
+  .stick{width:112px;height:112px}.cap{display:none}#gearBtn{height:60px}#hbBtn{height:40px}.tspd b{font-size:22px}
   .card{padding:14px;gap:10px}.plate{padding:8px 14px}.plate h1{font-size:22px}.plate p{font-size:12px;margin-top:2px}.mode{padding:8px 12px}
 }
 @media (max-width:640px){
@@ -159,6 +175,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
     <div class="top">
       <div id="status" class="panel">
         <div class="limit" id="limit">40</div>
+        <div class="tspd"><b id="spd2">0</b><small>km/h</small></div>
         <div class="score"><small data-t="score">持ち点</small><b id="score">100</b></div>
         <span id="crit" hidden></span>
       </div>
@@ -181,12 +198,17 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
       <button class="blk" id="bL" type="button" aria-label="left signal">◀</button>
       <div class="spd"><b id="spd">0</b><span>km/h</span></div>
       <button class="blk" id="bR" type="button" aria-label="right signal">▶</button>
-      <button id="gear" type="button" aria-label="gear">D</button>
+      <button id="gear" type="button" aria-label="gear">P</button>
+      <button id="hb" class="blk" type="button" aria-label="parking brake">(P)</button>
     </div>
-    <div class="pad l"><div class="steer" id="steer" role="slider" aria-label="steering"><div class="knob" id="knob"></div></div></div>
-    <div class="pad r">
-      <button class="brake" data-hold="brake" data-t="brake" type="button"></button>
-      <button class="gas" data-hold="gas" data-t="gas" type="button"></button>
+    <div class="ctl">
+      <div class="gcol">
+        <div id="gearStrip" hidden><span>P</span><span>R</span><span>N</span><span>D</span></div>
+        <button id="gearBtn" type="button" aria-label="gear"><b id="gearLbl">P</b><i>↕</i></button>
+        <button id="hbBtn" type="button" data-t="hbLbl"></button>
+      </div>
+      <div id="wheelZone"><button class="blk" id="tbL" type="button" aria-label="left signal">◀</button><button class="blk" id="tbR" type="button" aria-label="right signal">▶</button><div id="ring"><i></i></div></div>
+      <div class="scol"><div class="stick" id="stR"><span class="u" data-t="gas"></span><span class="d" data-t="brake"></span><span class="lft">⇦</span><span class="rgt">⇨</span><div class="nub"></div></div><div class="cap" data-t="capR"></div></div>
     </div>
   </div></div>
 
@@ -210,7 +232,8 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
         <li><kbd>A</kbd> <kbd>D</kbd> / <kbd>←</kbd> <kbd>→</kbd> <span data-t="kSteer"></span></li>
         <li><kbd>Q</kbd> <kbd>E</kbd> <span data-t="kBlink"></span></li>
         <li><kbd>Z</kbd> <kbd>C</kbd> <span data-t="kLook"></span></li>
-        <li><kbd>X</kbd> <span data-t="kGear"></span></li>
+        <li><kbd>Shift</kbd> <kbd>X</kbd> <span data-t="kGear"></span></li>
+        <li><kbd>Space</kbd> <span data-t="kHb"></span></li>
         <li><kbd>V</kbd> <span data-t="kCam"></span></li>
         <li><kbd>P</kbd> <kbd>Esc</kbd> <span data-t="kPause"></span></li>
         <li><kbd>MOUSE</kbd> <span data-t="kDrag"></span></li>
@@ -225,6 +248,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
     <div class="card" style="width:min(380px,100%)">
       <div class="plate"><h1 data-t="paused"></h1><p data-t="pauseTip"></p></div>
       <div class="row"><button class="cta" id="resumeBtn" type="button" data-t="resume"></button><button class="ghost" id="pRestart" type="button" data-t="retry"></button><button class="ghost" id="pMenu" type="button" data-t="menu"></button></div>
+      <div class="row"><button class="ghost" id="pEnd" type="button" data-t="end"></button><button class="ghost" id="pSnd" type="button"></button></div>
     </div>
   </div>
 
@@ -248,13 +272,13 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
 /* ---------- text ---------- */
 const TX = {
 zh:{sub:'日本道路驾驶练习 · 面向驾校学员（左侧通行）',hints:'显示教学提示',mCourse:'检定路线（検定コース）',mCourseD:'按检定员指示走完约 900 m 的路线，减点方式评分，70 分以上合格。',
- mFree:'自由行驶（自由走行）',mFreeD:'没有固定路线，随意练习。交通规则照常判定。',kGas:'油门',kBrake:'刹车',kSteer:'方向盘',kBlink:'左 / 右转向灯',kLook:'向左 / 向右看（安全确认）',kGear:'D / R 换挡（停车时）',kCam:'切换车内 / 车外视角',kDrag:'移动鼠标转动视角（指向画面中央＝正前方）',kPause:'暂停',pause:'暂停',paused:'已暂停',pauseTip:'按 P 或 Esc 继续',resume:'继续',
- creep:'自动挡有蠕行：松开刹车车会慢慢前进，停车时请踩住刹车。',tHelp:'触屏操作：左下滑杆打方向，右下是刹车和油门；点车速两侧的箭头打转向灯，点 D 换挡；在画面上滑动可以转头查看。建议横屏。',rotate:'把手机横过来，视野更大',start:'开始驾驶',score:'持ち点',end:'结束并评分',cam:'视角',sndOn:'声音 开',sndOff:'声音 关',lookL:'看左',lookR:'看右',brake:'刹车',gas:'油门',
+ mFree:'自由行驶（自由走行）',mFreeD:'没有固定路线，随意练习。交通规则照常判定。',kGas:'油门',kBrake:'刹车',kSteer:'方向盘',kBlink:'左 / 右转向灯',kLook:'向左 / 向右看（安全确认）',kGear:'换挡 P→R→N→D / 反向（踩住刹车）',kHb:'手刹 拉起 / 松开',hbLbl:'手刹',capR:'上油门 下刹车 · 左右拨转向灯 · 双击换视角',needBrake:'先踩住刹车再换挡',needStop:'车停稳后才能换到这个挡',hStart:'起步：踩住刹车 → 挂到 D 挡（Shift ／ 按住挡位钮下滑）→ 松开手刹（Space ／ 点手刹钮）',kCam:'切换车内 / 车外视角',kDrag:'移动鼠标转动视角（指向画面中央＝正前方）',kPause:'暂停',pause:'暂停',paused:'已暂停',pauseTip:'按 P 或 Esc 继续',resume:'继续',
+ creep:'自动挡有蠕行：松开刹车车会慢慢前进，停车时请踩住刹车。',tHelp:'触屏操作：按住画面下方的方向盘转动来打方向；左下角按住挡位钮上下滑动换挡，下面是手刹；右摇杆上推油门、下拉刹车、左右拨打转向灯、双击切换视角；在画面其它地方滑动可以转头。建议横屏。',rotate:'把手机横过来，视野更大',start:'开始驾驶',score:'持ち点',end:'结束并评分',cam:'视角',sndOn:'声音 开',sndOff:'声音 关',lookL:'看左',lookR:'看右',brake:'刹车',gas:'油门',
  final:'得分',retry:'再来一次',menu:'返回菜单',
  iL:'下一个路口 左转（左折）',iR:'下一个路口 右转（右折）',iS:'下一个路口 直行（直進）',iG:'在前方左侧蓝色区域靠边停车',iU:'已到练习区域尽头，请掉头',iFree:'自由行驶中',
  off:'走错路线了，请按新的指示继续（不扣分）',edge:'练习区域到此为止',
  hStop:'前方「止まれ」：在停止线前把车完全停住，左右确认后再走',hRed:'红灯 / 黄灯：停在停止线前',hRail:'踏切（铁路道口）：不管有没有列车，都要在停止线前停车确认',hAlarm:'警报器在响：在停止线前等待列车通过',
- hPed:'人行横道有行人：必须停车让行',hBlink:'转弯前 30 m 打转向灯',hGoal:'打左转向灯，靠左侧路边停稳',
+ hPed:'人行横道有行人：必须停车让行',hBlink:'转弯前 30 m 打转向灯',hGoal:'打左转向灯，靠左侧路边停稳',hPark:'停稳后：挂 P 挡 → 拉起手刹，完成停车措置',
  pass:'合格',fail:'不合格',cut:'未完走',rCut:'路线还没有走完就结束了。把车停进终点的蓝色区域才算完成。',noV:'到目前为止没有扣分。',rPass:'合格标准：70 分以上，且没有检定中止项目。',rCrit:'出现了「検定中止」项目（危险行为），实际考试会当场结束。',rLow:'分数低于 70 分。',critChip:n=>'検定中止 ×'+n,stopTag:'検定中止',
  r:{signal:['信号無視','红灯时越过了停止线。红灯必须停在停止线前。'],stop:['一時不停止','「止まれ」处没有在停止线前完全停车。车速要降到 0，停在线前 2 m 以内。'],
   rail:['踏切不停止','过铁路道口前没有停车。必须在停止线前停车，听、看确认安全。'],railAlarm:['警報中の踏切進入','警报器响、栏杆放下时驶入了道口。'],
@@ -262,13 +286,13 @@ zh:{sub:'日本道路驾驶练习 · 面向驾校学员（左侧通行）',hints
   speed:['速度超過','超过了限速。注意圆形红圈标志上的数字。'],curb:['脱輪・縁石接触','车轮碰到了路缘石。'],nosig:['合図不履行','转弯没有打转向灯。'],
   latesig:['合図時期不適','转向灯打得太晚。应在路口前 30 m 开始。'],parksig:['停車合図なし','靠边停车时没有打左转向灯。'],parkpos:['停車位置不適','停车离左侧路边太远，应尽量靠左。']}},
 ja:{sub:'日本の道路ルールを練習する、教習生向けシミュレーター（左側通行）',hints:'ヒントを表示',mCourse:'検定コース',mCourseD:'検定員の指示に従って約900mのコースを走行。減点方式で70点以上が合格。',
- mFree:'自由走行',mFreeD:'コース指定なしで自由に練習。交通ルールの判定は有効です。',kGas:'アクセル',kBrake:'ブレーキ',kSteer:'ハンドル',kBlink:'左 / 右ウインカー',kLook:'左 / 右を目視確認',kGear:'D / R 切替（停止中）',kCam:'車内 / 車外 視点切替',kDrag:'マウスを動かして視点を回す（画面中央＝正面）',kPause:'ポーズ',pause:'ポーズ',paused:'ポーズ中',pauseTip:'P または Esc で再開',resume:'再開',
- creep:'AT車のクリープあり：ブレーキを離すとゆっくり進みます。停止中はブレーキを踏み続けてください。',tHelp:'タッチ操作：左下のスライダーでハンドル、右下がブレーキとアクセル。速度の左右の矢印でウインカー、D でギア切替。画面をスワイプすると視点が動きます。横向き推奨。',rotate:'スマホを横向きにすると視野が広がります',start:'運転開始',score:'持ち点',end:'終了して採点',cam:'視点',sndOn:'音 ON',sndOff:'音 OFF',lookL:'左確認',lookR:'右確認',brake:'ブレーキ',gas:'アクセル',
+ mFree:'自由走行',mFreeD:'コース指定なしで自由に練習。交通ルールの判定は有効です。',kGas:'アクセル',kBrake:'ブレーキ',kSteer:'ハンドル',kBlink:'左 / 右ウインカー',kLook:'左 / 右を目視確認',kGear:'シフト P→R→N→D / 逆方向（ブレーキを踏んで）',kHb:'サイドブレーキ',hbLbl:'サイド',capR:'上アクセル 下ブレーキ · 左右でウインカー · ダブルタップで視点',needBrake:'ブレーキを踏んでからシフトしてください',needStop:'完全に停止してからシフトしてください',hStart:'発進：ブレーキを踏む → D に入れる（Shift ／ シフトボタンを押したまま下へ）→ サイドブレーキ解除（Space ／ サイドボタン）',kCam:'車内 / 車外 視点切替',kDrag:'マウスを動かして視点を回す（画面中央＝正面）',kPause:'ポーズ',pause:'ポーズ',paused:'ポーズ中',pauseTip:'P または Esc で再開',resume:'再開',
+ creep:'AT車のクリープあり：ブレーキを離すとゆっくり進みます。停止中はブレーキを踏み続けてください。',tHelp:'タッチ操作：画面下のハンドルを押さえて回すと操舵。左下のシフトボタンを押したまま上下にスライドでシフト、その下がサイドブレーキ。右スティックは上でアクセル、下でブレーキ、左右でウインカー、ダブルタップで視点切替。それ以外の場所をスワイプすると視点が動きます。横向き推奨。',rotate:'スマホを横向きにすると視野が広がります',start:'運転開始',score:'持ち点',end:'終了して採点',cam:'視点',sndOn:'音 ON',sndOff:'音 OFF',lookL:'左確認',lookR:'右確認',brake:'ブレーキ',gas:'アクセル',
  final:'得点',retry:'もう一度',menu:'メニューへ',
  iL:'次の交差点を左折してください',iR:'次の交差点を右折してください',iS:'次の交差点を直進してください',iG:'前方左側の青いゾーンに停車してください',iU:'コース外です。Uターンしてください',iFree:'自由走行中',
  off:'コースを外れました。新しい指示に従ってください（減点なし）',edge:'練習エリアはここまでです',
  hStop:'前方「止まれ」：停止線の直前で完全に停止し、左右を確認',hRed:'赤・黄信号：停止線の手前で停止',hRail:'踏切：列車の有無にかかわらず直前で一時停止して確認',hAlarm:'警報機作動中：停止線の手前で列車の通過を待つ',
- hPed:'横断歩道に歩行者：必ず一時停止して道を譲る',hBlink:'交差点の30m手前で合図を出す',hGoal:'左合図を出し、道路の左端に寄せて停車',
+ hPed:'横断歩道に歩行者：必ず一時停止して道を譲る',hBlink:'交差点の30m手前で合図を出す',hGoal:'左合図を出し、道路の左端に寄せて停車',hPark:'停車後：P に入れる → サイドブレーキを引く（停車措置）',
  pass:'合格',fail:'不合格',cut:'未完走',rCut:'コースの途中で終了しました。ゴールの青いゾーンに停車すると完走です。',noV:'ここまで減点はありません。',rPass:'合格基準：70点以上、かつ検定中止項目なし。',rCrit:'検定中止項目（危険行為）がありました。実際の検定ではその場で中止になります。',rLow:'70点未満です。',critChip:n=>'検定中止 ×'+n,stopTag:'検定中止',
  r:{signal:['信号無視','赤信号で停止線を越えました。'],stop:['一時不停止','「止まれ」の停止線の直前で完全に停止していません。停止線の手前2m以内で速度0に。'],
   rail:['踏切不停止','踏切の直前で一時停止していません。'],railAlarm:['警報中の踏切進入','警報機が鳴っている踏切に進入しました。'],
@@ -279,7 +303,7 @@ ja:{sub:'日本の道路ルールを練習する、教習生向けシミュレ�
 const PTS={signal:0,stop:0,rail:0,railAlarm:0,ped:0,wrong:0,crash:0,speed:20,curb:20,nosig:5,latesig:5,parksig:5,parkpos:5}; // 0 = 検定中止
 let lang='zh'; const T=k=>TX[lang][k];
 const $=id=>document.getElementById(id);
-function applyLang(){document.querySelectorAll('[data-t]').forEach(e=>e.textContent=T(e.dataset.t));$('sndBtn').textContent=T(soundOn?'sndOn':'sndOff');lastInstr='';}
+function applyLang(){document.querySelectorAll('[data-t]').forEach(e=>e.textContent=T(e.dataset.t));$('sndBtn').textContent=$('pSnd').textContent=T(soundOn?'sndOn':'sndOff');lastInstr='';}
 
 /* ---------- world constants ---------- */
 const S=110,W=3.5,E=70,COLS=4,ROWS=3,SL=W+5.5,ZR=1.5*S,XC=0.5*S,FRONT=2.1,OUT=240;
@@ -481,7 +505,7 @@ function buildCockpit(){
   camL=new THREE.PerspectiveCamera(27,0.2/0.13,0.5,300);camL.position.set(-1.04,1.08,-0.5);camL.rotation.y=Math.PI-0.1;carMesh.add(camRear,camR,camL);
 }
 function drawCluster(dt){
-  const c=clusterCv.getContext('2d'),kmh=Math.abs(car.v)*3.6;rpm+=((0.8+Math.min(5.2,Math.abs(car.v)*0.17)+(inp.gas?0.9:0))-rpm)*Math.min(1,dt*4);
+  const c=clusterCv.getContext('2d'),kmh=Math.abs(car.v)*3.6;
   c.fillStyle='#07090d';c.fillRect(0,0,512,192);c.textAlign='center';c.textBaseline='middle';
   const dial=(cx,cy,r,max,step,val,label,red)=>{c.lineWidth=3;c.strokeStyle='#39424f';c.beginPath();c.arc(cx,cy,r,0,7);c.stroke();
     for(let v=0;v<=max;v+=step){const a=(135+270*v/max)*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a);c.strokeStyle=red!=null&&v>=red?'#e3414a':'#dfe5ec';c.lineWidth=2.5;c.beginPath();c.moveTo(cx+ca*(r-4),cy+sa*(r-4));c.lineTo(cx+ca*(r-14),cy+sa*(r-14));c.stroke();c.fillStyle='#dfe5ec';c.font='600 16px "Barlow Condensed",Arial';c.fillText(v,cx+ca*(r-27),cy+sa*(r-27));}
@@ -491,6 +515,7 @@ function drawCluster(dt){
   c.fillStyle=kmh>curLimit+2?'#ff5a62':'#f2f5f8';c.font='700 58px "Barlow Condensed",Arial';c.fillText(Math.round(kmh),256,92);c.fillStyle='#8f9bab';c.font='500 13px Arial';c.fillText('km/h',256,126);
   ['P','R','N','D'].forEach((g,k)=>{const on=g===car.gear;c.fillStyle=on?(g==='R'?'#f6b40e':'#1fe0a0'):'#4a5563';c.font=(on?'700 22px':'600 17px')+' "Barlow Condensed",Arial';c.fillText(g,223+k*22,160);});
   const arrow=(x,dir,on)=>{c.fillStyle=on?'#1fe0a0':'#17231f';c.beginPath();c.moveTo(x+dir*16,30);c.lineTo(x,18);c.lineTo(x,25);c.lineTo(x-dir*14,25);c.lineTo(x-dir*14,35);c.lineTo(x,35);c.lineTo(x,42);c.closePath();c.fill();};
+  c.fillStyle=car.hb?'#ff3b3b':'#2a1717';c.font='700 17px Arial';c.fillText('(P)',256,31);
   arrow(222,-1,blink==='L'&&blinkOn);arrow(290,1,blink==='R'&&blinkOn);clusterTex.needsUpdate=true;
 }
 
@@ -499,7 +524,7 @@ let state='menu',mode='course',hintsOn=true,soundOn=true,camMode=0;
 let violations=[],score=100,cp=0,trk=null,pending=null,rt=null,pc=null,curLimit=40,overT=0,overFlag=false,wrongT=0,wrongFlag=false,goalT=0,invuln=0,blink=null,blinkT=0,blinkOn=false,lookOff=0,edgeT=0;
 let dragYaw=0,dragPitch=0,dragging=false,mouseLook=false,mYaw=0,mPitch=0;const cool={};const inp={gas:0,brake:0,left:0,right:0,lookL:0,lookR:0,steerA:0};
 function resetGame(){
-  car={x:-45,z:2*S-W/2,a:Math.PI/2,v:0,steer:0,gear:'D'};violations=[];score=100;cp=0;trk=pending=rt=pc=null;curLimit=40;overT=0;overFlag=false;wrongT=0;wrongFlag=false;goalT=0;invuln=0;blink=null;time=0;
+  car={x:-45,z:2*S-W/2,a:Math.PI/2,v:0,steer:0,gear:'P',hb:true};violations=[];score=100;cp=0;trk=pending=rt=pc=null;curLimit=40;overT=0;overFlag=false;wrongT=0;wrongFlag=false;goalT=0;invuln=0;blink=null;time=0;
   for(const k in cool)delete cool[k];
   npcs.forEach(n=>{n.s=n.s0;n.v=0;n.cleared=null;n.wait=0;});ped.state='away';ped.t=6;ped.first=true;ped.mesh.visible=false;rail.alarm=false;rail.t=22;rail.train.visible=false;
   goalObjs.forEach(o=>o.visible=mode==='course');$('toasts').innerHTML='';lastInstr='';
@@ -509,6 +534,9 @@ function resetGame(){
 let actx=null;
 function beep(f,dur,vol,type){if(!actx||!soundOn)return;try{const o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime;o.type=type||'square';o.frequency.value=f;g.gain.setValueAtTime(vol||0.04,t);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+dur);}catch(e){}}
 
+let eng=null;
+function engine(){if(!actx)return;if(!eng){try{const o=actx.createOscillator(),o2=actx.createOscillator(),g=actx.createGain(),f=actx.createBiquadFilter();o.type='sawtooth';o2.type='square';f.type='lowpass';f.frequency.value=320;g.gain.value=0;o.connect(f);o2.connect(f);f.connect(g);g.connect(actx.destination);o.start();o2.start();eng={o,o2,g};}catch(e){return;}}
+  const on=soundOn&&state==='drive',t=actx.currentTime;eng.o.frequency.setTargetAtTime(38+rpm*17,t,0.05);eng.o2.frequency.setTargetAtTime(19+rpm*8.5,t,0.05);eng.g.gain.setTargetAtTime(on?0.012+(inp.gas?0.012:0):0,t,0.08);}
 /* ---------- rules ---------- */
 function violate(id){
   if(state!=='drive'||(cool[id]||0)>time)return;cool[id]=time+4;
@@ -596,16 +624,17 @@ function rules(dt){
   }else pc=null;
   ped.threat=threat;
   // --- goal
-  if(mode==='course'&&cp===CPS.length-1&&car.x>GOAL.x0&&car.x<GOAL.x1&&car.z>GOAL.z0&&car.z<GOAL.z1&&fz>0.8&&stopped){goalT+=dt;
-    if(goalT>0.7){if(blink!=='L')violate('parksig');if(car.x-S<2.0)violate('parkpos');finish(true);}}else goalT=0;
+  if(mode==='course'&&cp===CPS.length-1&&car.x>GOAL.x0&&car.x<GOAL.x1&&car.z>GOAL.z0&&car.z<GOAL.z1&&fz>0.8&&stopped){hint='hPark';if(car.gear==='P'&&car.hb)goalT+=dt;
+    if(goalT>0.5){if(blink!=='L')violate('parksig');if(car.x-S<2.0)violate('parkpos');finish(true);}}else goalT=0;
+  if(hint!=='hPark'&&Math.abs(car.v)<0.3&&(car.hb||car.gear==='P'||car.gear==='N'))hint='hStart';
   setHint(hint);
 }
 
 /* ---------- simulation ---------- */
 function drive(dt){
-  const s=car.gear==='D'?1:-1,vm=car.gear==='D'?33:4;let u=Math.max(0,car.v*s),acc=0;
-  if(inp.gas)acc+=2.8*(1-u/vm);else if(!inp.brake&&u<1.4)acc+=0.8;else acc-=0.35+0.03*u;
-  if(inp.brake)acc-=8;u=Math.max(0,u+acc*dt);car.v=u*s;
+  const g=car.gear,pow=g==='D'||g==='R',s=g==='R'?-1:g==='D'?1:(car.v<0?-1:1),vm=g==='R'?4:33;let u=Math.max(0,car.v*s),acc=0;
+  if(pow&&inp.gas)acc+=2.8*inp.gas*(1-u/vm);else if(pow&&!inp.brake&&!car.hb&&u<1.4)acc+=0.8;else acc-=0.35+0.03*u;
+  acc-=8*inp.brake;if(car.hb)acc-=6;u=Math.max(0,u+acc*dt);if(g==='P')u=0;car.v=u*s;
   const maxS=0.6/(1+(u/6)*(u/6)),target=clamp(inp.right-inp.left+inp.steerA,-1,1)*maxS,rate=(target===0?2.4:1.3)*dt;
   car.steer+=clamp(target-car.steer,-rate,rate);car.steer=clamp(car.steer,-maxS,maxS);
   car.a+=car.v/2.6*Math.tan(car.steer)*dt;
@@ -682,11 +711,15 @@ function drawMap(){
 }
 let lastTxt={};function setTxt(id,v){if(lastTxt[id]!==v){lastTxt[id]=v;$(id).textContent=v;}}
 function hud(dt){
+  rpm+=((0.8+Math.min(5.2,Math.abs(car.v)*0.17)+inp.gas*0.9)-rpm)*Math.min(1,dt*4);
   const kmh=Math.round(Math.abs(car.v)*3.6);setTxt('spd',kmh);$('spd').classList.toggle('over',kmh>curLimit+2);setTxt('limit',curLimit);setTxt('score',score);$('score').classList.toggle('low',score<70);
   const crit=violations.filter(v=>!v.pts).length;$('crit').hidden=!crit;if(crit)setTxt('crit',T('critChip')(crit));
   if(blink){blinkT+=dt;if(blinkT>0.38){blinkT=0;blinkOn=!blinkOn;beep(blinkOn?1500:1150,0.025,0.03);}}else{blinkOn=false;blinkT=0.38;}
   $('bL').className='blk'+(blink==='L'?' on'+(blinkOn?' tick':''):'');$('bR').className='blk'+(blink==='R'?' on'+(blinkOn?' tick':''):'');
-  setTxt('gear',car.gear);$('gear').classList.toggle('rev',car.gear==='R');$('dash').classList.toggle('fp',camMode===0);$('map').classList.toggle('fp',camMode===0);
+  setTxt('gear',car.gear);$('gear').classList.toggle('rev',car.gear==='R');$('hb').classList.toggle('on',car.hb);
+  if(TOUCH){setTxt('spd2',kmh);$('spd2').classList.toggle('over',kmh>curLimit+2);setTxt('gearLbl',car.gear);$('gearBtn').classList.toggle('rev',car.gear==='R');$('hbBtn').classList.toggle('on',car.hb);
+    $('tbL').className=$('bL').className;$('tbR').className=$('bR').className;$('ring').style.setProperty('--rot',(car.steer/0.6*200).toFixed(0)+'deg');
+    const gi=GEARS.indexOf(car.gear),sp=$('gearStrip').children;for(let q=0;q<4;q++)sp[q].className=q===gi?'on':'';}$('dash').classList.toggle('fp',camMode===0);$('map').classList.toggle('fp',camMode===0);
 }
 function view(dt){
   carMesh.position.set(car.x,0,car.z);carMesh.rotation.y=-car.a;
@@ -699,24 +732,34 @@ function view(dt){
     wheel.rotation.z=-car.steer*8;stalk.rotation.z=blink==='R'?-0.24:blink==='L'?0.24:0;}
   else{{const ya=car.a+lookOff*0.6+dragYaw,ox=Math.sin(ya),oz=-Math.cos(ya);camera.position.set(car.x-ox*7.5,3.6-dragPitch*5,car.z-oz*7.5);camera.rotation.set(-0.24+dragPitch*0.5,-ya,0);}}
 }
-let prev=0;
+let prev=0,fpsN=0,fpsT=0,quality=1,lowFx=false;
 function frame(ts){
   const dt=Math.min(0.05,(ts-prev)/1000||0.016);prev=ts;
   if(state==='drive'){drive(dt);rules(dt);}
   if(state!=='pause')world(dt);view(dt);if(state==='drive'){hud(dt);drawMap();
-    if(camMode===0){drawCluster(dt);mapTex.needsUpdate=true;cockpit.visible=false;bodyMesh.visible=true;const fc=fcount++,sd=TOUCH?(fc>>1)&1:fc&1;
-      if(!TOUCH||!(fc&1)){renderer.setRenderTarget(rtRear);renderer.render(scene,camRear);}
-      if(!TOUCH||(fc&1)){renderer.setRenderTarget(sd?rtL:rtR);renderer.render(scene,sd?camL:camR);}renderer.setRenderTarget(null);cockpit.visible=true;bodyMesh.visible=false;}}
+    if(camMode===0){drawCluster(dt);mapTex.needsUpdate=true;cockpit.visible=false;bodyMesh.visible=true;const fc=fcount++,slow=TOUCH||lowFx,sd=slow?(fc>>1)&1:fc&1;
+      if(!slow||!(fc&1)){renderer.setRenderTarget(rtRear);renderer.render(scene,camRear);}
+      if(!slow||(fc&1)){renderer.setRenderTarget(sd?rtL:rtR);renderer.render(scene,sd?camL:camR);}renderer.setRenderTarget(null);cockpit.visible=true;bodyMesh.visible=false;}}
+  engine();
+  // adaptive quality: drop render resolution when the frame rate stays low
+  fpsN++;fpsT+=dt;if(fpsT>2.5){const fps=fpsN/fpsT;fpsN=0;fpsT=0;if(state==='drive'&&fps<27&&quality>0.6){quality=Math.max(0.6,quality-0.2);renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,TOUCH?1.5:2)*quality);resize();lowFx=quality<0.75;}}
   renderer.render(scene,camera);requestAnimationFrame(frame);
 }
 
 /* ---------- input ---------- */
 function toggleBlink(s){blink=blink===s?null:s;blinkT=0.38;blinkOn=false;}
-function toggleGear(){if(Math.abs(car.v)<0.3){car.v=0;car.gear=car.gear==='D'?'R':'D';}}
-const KEY={KeyW:'gas',ArrowUp:'gas',KeyS:'brake',ArrowDown:'brake',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right',KeyZ:'lookL',KeyC:'lookR',Space:'brake'};
+const GEARS=['P','R','N','D'];let noteT=0;
+function buzz(){try{navigator.vibrate&&navigator.vibrate(15);}catch(e){}}
+function shiftGear(dir,wrap){const i=GEARS.indexOf(car.gear);let ni=i+dir;if(wrap)ni=(ni+4)%4;else ni=clamp(ni,0,3);if(ni===i)return;const to=GEARS[ni],nd=(car.gear==='N'&&to==='D')||(car.gear==='D'&&to==='N');
+  const warn=k=>{if(noteT<performance.now()){noteT=performance.now()+2500;note(T(k));}};
+  if(!nd&&Math.abs(car.v)>0.3)return warn('needStop');if(car.gear==='P'&&!inp.brake)return warn('needBrake');
+  car.gear=to;if(!nd)car.v=0;buzz();beep(520,0.04,0.03);}
+function toggleGear(){shiftGear(1,true);}
+function toggleHb(){car.hb=!car.hb;buzz();beep(car.hb?300:420,0.06,0.04);}
+const KEY={KeyW:'gas',ArrowUp:'gas',KeyS:'brake',ArrowDown:'brake',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right',KeyZ:'lookL',KeyC:'lookR'};
 function setPause(on){if(on&&state==='drive'){state='pause';for(const k in inp)inp[k]=0;$('pause').hidden=false;$('resumeBtn').focus();}else if(!on&&state==='pause'){state='drive';$('pause').hidden=true;}}
 window.addEventListener('keydown',e=>{if(e.code==='KeyP'||e.code==='Escape'){if(state==='drive'||state==='pause'){setPause(state==='drive');e.preventDefault();}return;}if(state!=='drive')return;const k=KEY[e.code];if(k){inp[k]=1;e.preventDefault();return;}
-  if(e.repeat)return;if(e.code==='KeyQ')toggleBlink('L');else if(e.code==='KeyE')toggleBlink('R');else if(e.code==='KeyX')toggleGear();else if(e.code==='KeyV')camMode=1-camMode;});
+  if(e.repeat)return;if(e.code==='KeyQ')toggleBlink('L');else if(e.code==='KeyE')toggleBlink('R');else if(e.code==='KeyX')shiftGear(-1,false);else if(e.code==='ShiftLeft'||e.code==='ShiftRight')shiftGear(1,true);else if(e.code==='Space'){toggleHb();e.preventDefault();}else if(e.code==='KeyV')camMode=1-camMode;});
 window.addEventListener('keyup',e=>{const k=KEY[e.code];if(k)inp[k]=0;});
 window.addEventListener('blur',()=>{for(const k in inp)inp[k]=0;});
 document.querySelectorAll('[data-hold]').forEach(b=>{const k=b.dataset.hold,on=e=>{e.preventDefault();inp[k]=1;try{b.setPointerCapture(e.pointerId);}catch(_){}},off=()=>{inp[k]=0;};
@@ -730,18 +773,34 @@ document.addEventListener('mouseleave',()=>{mYaw=0;mPitch=0;});window.addEventLi
 canvas.addEventListener('pointerdown',e=>{if(state!=='drive'||e.pointerType==='mouse')return;mouseLook=false;dragging=true;pid=e.pointerId;lx=e.clientX;ly=e.clientY;try{canvas.setPointerCapture(pid);}catch(_){}});
 canvas.addEventListener('pointermove',e=>{if(!dragging||e.pointerId!==pid)return;dragYaw=clamp(dragYaw+(e.clientX-lx)*0.006,-2.7,2.7);dragPitch=clamp(dragPitch-(e.clientY-ly)*0.004,-0.7,0.5);lx=e.clientX;ly=e.clientY;});
 const end=e=>{if(e.pointerId===pid){dragging=false;pid=null;}};canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);}
-{const st=$('steer'),kn=$('knob');let sid=null;const set=e=>{const r=st.getBoundingClientRect(),half=r.width/2-kn.offsetWidth/2-6,v=clamp((e.clientX-r.left-r.width/2)/half,-1,1);inp.steerA=v;kn.style.transform='translateX('+(v*half)+'px)';};
-st.addEventListener('pointerdown',e=>{e.preventDefault();sid=e.pointerId;try{st.setPointerCapture(sid);}catch(_){}set(e);});st.addEventListener('pointermove',e=>{if(e.pointerId===sid)set(e);});
-const up=e=>{if(e.pointerId===sid){sid=null;inp.steerA=0;kn.style.transform='';}};st.addEventListener('pointerup',up);st.addEventListener('pointercancel',up);st.addEventListener('lostpointercapture',up);}
+function stick(id,onMove,onDouble){const el=$(id),nub=el.querySelector('.nub'),R=42;let pid=null,t0=0,x0=0,y0=0,lastTap=0,moved=false;
+  const pos=e=>{let x=(e.clientX-x0)/R,y=(e.clientY-y0)/R;const m=Math.hypot(x,y);if(m*R>9)moved=true;if(m>1){x/=m;y/=m;}nub.style.transform='translate('+(x*R)+'px,'+(y*R)+'px)';onMove(x,y);};
+  el.addEventListener('pointerdown',e=>{e.preventDefault();if(pid!==null)return;pid=e.pointerId;t0=performance.now();x0=e.clientX;y0=e.clientY;moved=false;try{el.setPointerCapture(pid);}catch(_){}});
+  el.addEventListener('pointermove',e=>{if(e.pointerId===pid)pos(e);});
+  const up=e=>{if(e.pointerId!==pid)return;pid=null;nub.style.transform='';onMove(0,0);const now=performance.now();if(!moved&&now-t0<280){if(now-lastTap<480){lastTap=0;onDouble();}else lastTap=now;}};
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('contextmenu',e=>e.preventDefault());}
+{let armB=false;const dz=(v,d)=>Math.abs(v)<d?0:Math.sign(v)*(Math.abs(v)-d)/(1-d);
+// steering: hold the wheel and turn it (finger angle around the wheel centre)
+{const z=$('wheelZone'),ring=$('ring');let wid=null,pa=0,acc=0;const ang=e=>{const r=ring.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);return Math.hypot(dx,dy)<18?null:Math.atan2(dy,dx);};
+z.addEventListener('pointerdown',e=>{if(e.target.closest('button')||wid!==null)return;e.preventDefault();wid=e.pointerId;pa=ang(e);acc=0;try{z.setPointerCapture(wid);}catch(_){}});
+z.addEventListener('pointermove',e=>{if(e.pointerId!==wid)return;const a=ang(e);if(a==null)return;if(pa!=null){let d=a-pa;if(d>Math.PI)d-=2*Math.PI;if(d<-Math.PI)d+=2*Math.PI;acc=clamp(acc+d,-1.7,1.7);inp.steerA=acc/1.7;}pa=a;});
+const up=e=>{if(e.pointerId===wid){wid=null;acc=0;inp.steerA=0;}};z.addEventListener('pointerup',up);z.addEventListener('pointercancel',up);}
+// gear: hold the button and slide up / down
+{const gb=$('gearBtn'),strip=$('gearStrip');let gid=null,gy=0;
+gb.addEventListener('pointerdown',e=>{e.preventDefault();if(state!=='drive')return;gid=e.pointerId;gy=e.clientY;strip.hidden=false;try{gb.setPointerCapture(gid);}catch(_){}});
+gb.addEventListener('pointermove',e=>{if(e.pointerId!==gid)return;while(e.clientY-gy>30){shiftGear(1,false);gy+=30;}while(e.clientY-gy<-30){shiftGear(-1,false);gy-=30;}});
+const up=e=>{if(e.pointerId===gid){gid=null;strip.hidden=true;}};gb.addEventListener('pointerup',up);gb.addEventListener('pointercancel',up);gb.addEventListener('contextmenu',e=>e.preventDefault());}
+$('hbBtn').onclick=()=>{if(state==='drive')toggleHb();};$('tbL').onclick=()=>toggleBlink('L');$('tbR').onclick=()=>toggleBlink('R');
+stick('stR',(x,y)=>{inp.gas=Math.max(0,dz(-y,0.15));inp.brake=Math.max(0,dz(y,0.15));if(Math.abs(x)>0.8&&Math.abs(y)<0.5){if(!armB){armB=true;if(state==='drive'){toggleBlink(x<0?'L':'R');buzz();}}}else if(Math.abs(x)<0.4)armB=false;},()=>{camMode=1-camMode;});}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true);});
-$('bL').onclick=()=>toggleBlink('L');$('bR').onclick=()=>toggleBlink('R');$('gear').onclick=toggleGear;
-$('camBtn').onclick=()=>{camMode=1-camMode;};$('sndBtn').onclick=()=>{soundOn=!soundOn;$('sndBtn').textContent=T(soundOn?'sndOn':'sndOff');};
+$('hb').onclick=toggleHb;$('bL').onclick=()=>toggleBlink('L');$('bR').onclick=()=>toggleBlink('R');$('gear').onclick=toggleGear;
+$('camBtn').onclick=()=>{camMode=1-camMode;};$('sndBtn').onclick=$('pSnd').onclick=()=>{soundOn=!soundOn;applyLang();};$('pEnd').onclick=()=>{if(state==='pause'){$('pause').hidden=true;state='drive';finish();}};
 $('endBtn').onclick=()=>{if(state==='drive')finish();};$('pauseBtn').onclick=()=>setPause(true);$('resumeBtn').onclick=()=>setPause(false);$('pRestart').onclick=()=>{$('pause').hidden=true;begin();};$('pMenu').onclick=()=>{$('pause').hidden=true;$('hud').hidden=true;resetGame();state='menu';$('start').hidden=false;};
 function begin(){
   mode=$('modeFree').checked?'free':'course';hintsOn=$('hintsOn').checked;resetGame();for(const k in inp)inp[k]=0;
   try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume();}catch(e){}
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});}catch(e){}
-  $('knob').style.transform='';if(TOUCH&&window.innerHeight>window.innerWidth)setTimeout(()=>note(T('rotate')),400);
+  if(TOUCH&&window.innerHeight>window.innerWidth)setTimeout(()=>note(T('rotate')),400);
   $('start').hidden=true;$('result').hidden=true;$('hud').hidden=false;lastHint=null;$('hint').hidden=true;state='drive';canvas.focus&&canvas.focus();
 }
 $('startBtn').onclick=begin;$('retryBtn').onclick=begin;
