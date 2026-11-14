@@ -78,7 +78,33 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
 .pad .col{display:grid;gap:8px}
 .pad .sm{height:38px;font-size:12px}
 @media (hover:hover) and (pointer:fine){#dash.fp,#map.fp{display:none}}
-@media (hover:none),(pointer:coarse){.pad{display:flex}#dash{bottom:112px}.keys{display:none}}
+@media (hover:none),(pointer:coarse){.pad{display:flex}.card .keys{display:none}}
+#app{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.overlay{touch-action:pan-y}
+.steer{width:min(200px,44vw);height:72px;border-radius:36px;background:var(--panel);border:1px solid var(--line);position:relative;touch-action:none}
+.steer::before,.steer::after{position:absolute;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px}
+.steer::before{content:"◀";left:12px}.steer::after{content:"▶";right:12px}
+.knob{position:absolute;top:7px;left:50%;width:56px;height:56px;margin-left:-28px;border-radius:50%;background:var(--paper);box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:1}
+.pad .brake{width:76px;height:76px}.pad .gas{width:76px;height:100px}
+.touchOnly{display:none}
+@media (hover:none),(pointer:coarse){
+  .touchOnly{display:block}
+  .mini{min-height:36px;padding:6px 12px}
+  .blk,#gear{width:50px;height:50px}
+  #dash{bottom:6px}
+}
+@media (hover:none) and (max-width:640px),(pointer:coarse) and (max-width:640px){#dash{bottom:118px}}
+@media (max-height:480px){
+  #hud{padding-block:6px}
+  #status{padding:5px 8px;gap:8px}.limit{width:38px;height:38px;border-width:5px;font-size:18px}.score b{font-size:22px}
+  .board{padding:5px 10px;gap:8px;border-width:2px}.board .arrow{font-size:24px;width:26px}.board .txt{font-size:13px}.board .dist{font-size:16px}
+  #hint{font-size:12px;padding:4px 8px}
+  #map{width:86px}
+  #toasts{top:70px;width:min(260px,40vw)}.toast p{display:none}
+  .spd b{font-size:34px}.spd{min-width:64px}#dash{padding:4px 10px;gap:8px}
+  .pad .gas{height:84px}.pad .brake{height:68px}.steer{height:64px}.knob{width:50px;height:50px;margin-left:-25px}
+  .card{padding:14px;gap:10px}.plate{padding:8px 14px}.plate h1{font-size:22px}.plate p{font-size:12px;margin-top:2px}.mode{padding:8px 12px}
+}
 @media (max-width:640px){
   .top{grid-template-columns:minmax(0,1fr) auto}
   #instr{grid-column:1/-1;order:-1;justify-self:stretch}
@@ -87,8 +113,8 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
   .board .txt{font-size:14px}
 }
 
-.overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,12,20,.62);overflow:auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.card{width:min(620px,100%);background:var(--night);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:16px}
+.overlay{position:absolute;inset:0;display:flex;background:rgba(8,12,20,.62);overflow:auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.card{margin:auto;width:min(620px,100%);background:var(--night);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:16px}
 .plate{background:var(--sign-blue);border:3px solid #fff;border-radius:10px;box-shadow:0 0 0 2px var(--sign-blue);padding:14px 18px}
 .plate h1{margin:0;font:900 clamp(24px,5.4vw,36px)/1.15 var(--f-display);letter-spacing:.04em;text-wrap:balance}
 .plate p{margin:6px 0 0;font-size:14px;opacity:.92}
@@ -157,10 +183,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
       <button class="blk" id="bR" type="button" aria-label="right signal">▶</button>
       <button id="gear" type="button" aria-label="gear">D</button>
     </div>
-    <div class="pad l">
-      <div class="col"><button class="sm" data-hold="lookL" data-t="lookL" type="button"></button><button data-hold="left" type="button">◀</button></div>
-      <div class="col"><button class="sm" data-hold="lookR" data-t="lookR" type="button"></button><button data-hold="right" type="button">▶</button></div>
-    </div>
+    <div class="pad l"><div class="steer" id="steer" role="slider" aria-label="steering"><div class="knob" id="knob"></div></div></div>
     <div class="pad r">
       <button class="brake" data-hold="brake" data-t="brake" type="button"></button>
       <button class="gas" data-hold="gas" data-t="gas" type="button"></button>
@@ -192,6 +215,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
         <li><kbd>P</kbd> <kbd>Esc</kbd> <span data-t="kPause"></span></li>
         <li><kbd>MOUSE</kbd> <span data-t="kDrag"></span></li>
       </ul>
+      <p class="note touchOnly" data-t="tHelp"></p>
       <p class="note" data-t="creep"></p>
       <div class="row"><button class="cta" id="startBtn" type="button" data-t="start"></button></div>
     </div>
@@ -225,7 +249,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
 const TX = {
 zh:{sub:'日本道路驾驶练习 · 面向驾校学员（左侧通行）',hints:'显示教学提示',mCourse:'检定路线（検定コース）',mCourseD:'按检定员指示走完约 900 m 的路线，减点方式评分，70 分以上合格。',
  mFree:'自由行驶（自由走行）',mFreeD:'没有固定路线，随意练习。交通规则照常判定。',kGas:'油门',kBrake:'刹车',kSteer:'方向盘',kBlink:'左 / 右转向灯',kLook:'向左 / 向右看（安全确认）',kGear:'D / R 换挡（停车时）',kCam:'切换车内 / 车外视角',kDrag:'移动鼠标转动视角（指向画面中央＝正前方）',kPause:'暂停',pause:'暂停',paused:'已暂停',pauseTip:'按 P 或 Esc 继续',resume:'继续',
- creep:'自动挡有蠕行：松开刹车车会慢慢前进，停车时请踩住刹车。',start:'开始驾驶',score:'持ち点',end:'结束并评分',cam:'视角',sndOn:'声音 开',sndOff:'声音 关',lookL:'看左',lookR:'看右',brake:'刹车',gas:'油门',
+ creep:'自动挡有蠕行：松开刹车车会慢慢前进，停车时请踩住刹车。',tHelp:'触屏操作：左下滑杆打方向，右下是刹车和油门；点车速两侧的箭头打转向灯，点 D 换挡；在画面上滑动可以转头查看。建议横屏。',rotate:'把手机横过来，视野更大',start:'开始驾驶',score:'持ち点',end:'结束并评分',cam:'视角',sndOn:'声音 开',sndOff:'声音 关',lookL:'看左',lookR:'看右',brake:'刹车',gas:'油门',
  final:'得分',retry:'再来一次',menu:'返回菜单',
  iL:'下一个路口 左转（左折）',iR:'下一个路口 右转（右折）',iS:'下一个路口 直行（直進）',iG:'在前方左侧蓝色区域靠边停车',iU:'已到练习区域尽头，请掉头',iFree:'自由行驶中',
  off:'走错路线了，请按新的指示继续（不扣分）',edge:'练习区域到此为止',
@@ -239,7 +263,7 @@ zh:{sub:'日本道路驾驶练习 · 面向驾校学员（左侧通行）',hints
   latesig:['合図時期不適','转向灯打得太晚。应在路口前 30 m 开始。'],parksig:['停車合図なし','靠边停车时没有打左转向灯。'],parkpos:['停車位置不適','停车离左侧路边太远，应尽量靠左。']}},
 ja:{sub:'日本の道路ルールを練習する、教習生向けシミュレーター（左側通行）',hints:'ヒントを表示',mCourse:'検定コース',mCourseD:'検定員の指示に従って約900mのコースを走行。減点方式で70点以上が合格。',
  mFree:'自由走行',mFreeD:'コース指定なしで自由に練習。交通ルールの判定は有効です。',kGas:'アクセル',kBrake:'ブレーキ',kSteer:'ハンドル',kBlink:'左 / 右ウインカー',kLook:'左 / 右を目視確認',kGear:'D / R 切替（停止中）',kCam:'車内 / 車外 視点切替',kDrag:'マウスを動かして視点を回す（画面中央＝正面）',kPause:'ポーズ',pause:'ポーズ',paused:'ポーズ中',pauseTip:'P または Esc で再開',resume:'再開',
- creep:'AT車のクリープあり：ブレーキを離すとゆっくり進みます。停止中はブレーキを踏み続けてください。',start:'運転開始',score:'持ち点',end:'終了して採点',cam:'視点',sndOn:'音 ON',sndOff:'音 OFF',lookL:'左確認',lookR:'右確認',brake:'ブレーキ',gas:'アクセル',
+ creep:'AT車のクリープあり：ブレーキを離すとゆっくり進みます。停止中はブレーキを踏み続けてください。',tHelp:'タッチ操作：左下のスライダーでハンドル、右下がブレーキとアクセル。速度の左右の矢印でウインカー、D でギア切替。画面をスワイプすると視点が動きます。横向き推奨。',rotate:'スマホを横向きにすると視野が広がります',start:'運転開始',score:'持ち点',end:'終了して採点',cam:'視点',sndOn:'音 ON',sndOff:'音 OFF',lookL:'左確認',lookR:'右確認',brake:'ブレーキ',gas:'アクセル',
  final:'得点',retry:'もう一度',menu:'メニューへ',
  iL:'次の交差点を左折してください',iR:'次の交差点を右折してください',iS:'次の交差点を直進してください',iG:'前方左側の青いゾーンに停車してください',iU:'コース外です。Uターンしてください',iFree:'自由走行中',
  off:'コースを外れました。新しい指示に従ってください（減点なし）',edge:'練習エリアはここまでです',
@@ -275,7 +299,8 @@ function sigState(n,axis){const t=(time+n.off)%32;if(axis==='h')return t<12?'g':
 /* ---------- three setup ---------- */
 const canvas=$('gl'),app=$('app');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+const TOUCH=window.matchMedia('(hover:none),(pointer:coarse)').matches;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,TOUCH?1.5:2));
 const scene=new THREE.Scene();const SKY=0xd9dad2;scene.background=new THREE.Color(SKY);scene.fog=new THREE.Fog(SKY,80,230);
 new THREE.CubeTextureLoader().setPath('tex/').load(['px.jpg','nx.jpg','py.jpg','ny.jpg','pz.jpg','nz.jpg'],t=>{scene.background=t;});
 const IMG={};function loadImg(k,u){return new Promise(r=>{const im=new Image();im.onload=()=>{IMG[k]=im;r();};im.onerror=()=>r();im.src=u;});}
@@ -446,7 +471,7 @@ function buildCockpit(){
   for(const sg of[-1,1]){box(md,0.06,0.52,2.3,sg*0.84,0.76,0.25,C);beam(dk,[sg*0.83,1.0,-1.0],[sg*0.72,1.63,-0.3],0.08,C);beam(dk,[sg*0.84,1.02,0.55],[sg*0.75,1.63,0.55],0.1,C);}
   box(md,1.5,0.04,1.9,0,1.66,0.62,C);box(dk,1.46,0.06,0.08,0,1.63,-0.3,C);
   // mirrors rendered from rear-facing cameras
-  rtRear=new THREE.WebGLRenderTarget(768,224);rtL=new THREE.WebGLRenderTarget(256,166);rtR=new THREE.WebGLRenderTarget(256,166);
+  rtRear=TOUCH?new THREE.WebGLRenderTarget(384,112):new THREE.WebGLRenderTarget(768,224);rtL=new THREE.WebGLRenderTarget(TOUCH?128:256,TOUCH?83:166);rtR=new THREE.WebGLRenderTarget(TOUCH?128:256,TOUCH?83:166);
   [rtRear,rtL,rtR].forEach(t=>{t.texture.wrapS=THREE.RepeatWrapping;t.texture.repeat.x=-1;});
   const mir=(rt,w,h,x,y,z,ry,shell)=>{const G=new THREE.Group();G.position.set(x,y,z);G.rotation.y=ry;C.add(G);box(shell,w+0.03,h+0.03,0.05,0,0,0,G);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:rt.texture,fog:false}));m.position.z=0.027;G.add(m);};
   mir(rtRear,0.36,0.105,0.04,1.42,-0.45,0.42,bk);box(bk,0.03,0.2,0.03,0.04,1.55,-0.47,C);
@@ -472,7 +497,7 @@ function drawCluster(dt){
 /* ---------- game state ---------- */
 let state='menu',mode='course',hintsOn=true,soundOn=true,camMode=0;
 let violations=[],score=100,cp=0,trk=null,pending=null,rt=null,pc=null,curLimit=40,overT=0,overFlag=false,wrongT=0,wrongFlag=false,goalT=0,invuln=0,blink=null,blinkT=0,blinkOn=false,lookOff=0,edgeT=0;
-let dragYaw=0,dragPitch=0,dragging=false,mouseLook=false,mYaw=0,mPitch=0;const cool={};const inp={gas:0,brake:0,left:0,right:0,lookL:0,lookR:0};
+let dragYaw=0,dragPitch=0,dragging=false,mouseLook=false,mYaw=0,mPitch=0;const cool={};const inp={gas:0,brake:0,left:0,right:0,lookL:0,lookR:0,steerA:0};
 function resetGame(){
   car={x:-45,z:2*S-W/2,a:Math.PI/2,v:0,steer:0,gear:'D'};violations=[];score=100;cp=0;trk=pending=rt=pc=null;curLimit=40;overT=0;overFlag=false;wrongT=0;wrongFlag=false;goalT=0;invuln=0;blink=null;time=0;
   for(const k in cool)delete cool[k];
@@ -581,7 +606,7 @@ function drive(dt){
   const s=car.gear==='D'?1:-1,vm=car.gear==='D'?33:4;let u=Math.max(0,car.v*s),acc=0;
   if(inp.gas)acc+=2.8*(1-u/vm);else if(!inp.brake&&u<1.4)acc+=0.8;else acc-=0.35+0.03*u;
   if(inp.brake)acc-=8;u=Math.max(0,u+acc*dt);car.v=u*s;
-  const maxS=0.6/(1+(u/6)*(u/6)),target=(inp.right-inp.left)*maxS,rate=(target===0?2.4:1.3)*dt;
+  const maxS=0.6/(1+(u/6)*(u/6)),target=clamp(inp.right-inp.left+inp.steerA,-1,1)*maxS,rate=(target===0?2.4:1.3)*dt;
   car.steer+=clamp(target-car.steer,-rate,rate);car.steer=clamp(car.steer,-maxS,maxS);
   car.a+=car.v/2.6*Math.tan(car.steer)*dt;
   let nx=car.x+Math.sin(car.a)*car.v*dt,nz=car.z-Math.cos(car.a)*car.v*dt;
@@ -679,8 +704,9 @@ function frame(ts){
   const dt=Math.min(0.05,(ts-prev)/1000||0.016);prev=ts;
   if(state==='drive'){drive(dt);rules(dt);}
   if(state!=='pause')world(dt);view(dt);if(state==='drive'){hud(dt);drawMap();
-    if(camMode===0){drawCluster(dt);mapTex.needsUpdate=true;cockpit.visible=false;bodyMesh.visible=true;renderer.setRenderTarget(rtRear);renderer.render(scene,camRear);
-      const sd=(fcount++)&1;renderer.setRenderTarget(sd?rtL:rtR);renderer.render(scene,sd?camL:camR);renderer.setRenderTarget(null);cockpit.visible=true;bodyMesh.visible=false;}}
+    if(camMode===0){drawCluster(dt);mapTex.needsUpdate=true;cockpit.visible=false;bodyMesh.visible=true;const fc=fcount++,sd=TOUCH?(fc>>1)&1:fc&1;
+      if(!TOUCH||!(fc&1)){renderer.setRenderTarget(rtRear);renderer.render(scene,camRear);}
+      if(!TOUCH||(fc&1)){renderer.setRenderTarget(sd?rtL:rtR);renderer.render(scene,sd?camL:camR);}renderer.setRenderTarget(null);cockpit.visible=true;bodyMesh.visible=false;}}
   renderer.render(scene,camera);requestAnimationFrame(frame);
 }
 
@@ -704,12 +730,18 @@ document.addEventListener('mouseleave',()=>{mYaw=0;mPitch=0;});window.addEventLi
 canvas.addEventListener('pointerdown',e=>{if(state!=='drive'||e.pointerType==='mouse')return;mouseLook=false;dragging=true;pid=e.pointerId;lx=e.clientX;ly=e.clientY;try{canvas.setPointerCapture(pid);}catch(_){}});
 canvas.addEventListener('pointermove',e=>{if(!dragging||e.pointerId!==pid)return;dragYaw=clamp(dragYaw+(e.clientX-lx)*0.006,-2.7,2.7);dragPitch=clamp(dragPitch-(e.clientY-ly)*0.004,-0.7,0.5);lx=e.clientX;ly=e.clientY;});
 const end=e=>{if(e.pointerId===pid){dragging=false;pid=null;}};canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);}
+{const st=$('steer'),kn=$('knob');let sid=null;const set=e=>{const r=st.getBoundingClientRect(),half=r.width/2-kn.offsetWidth/2-6,v=clamp((e.clientX-r.left-r.width/2)/half,-1,1);inp.steerA=v;kn.style.transform='translateX('+(v*half)+'px)';};
+st.addEventListener('pointerdown',e=>{e.preventDefault();sid=e.pointerId;try{st.setPointerCapture(sid);}catch(_){}set(e);});st.addEventListener('pointermove',e=>{if(e.pointerId===sid)set(e);});
+const up=e=>{if(e.pointerId===sid){sid=null;inp.steerA=0;kn.style.transform='';}};st.addEventListener('pointerup',up);st.addEventListener('pointercancel',up);st.addEventListener('lostpointercapture',up);}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true);});
 $('bL').onclick=()=>toggleBlink('L');$('bR').onclick=()=>toggleBlink('R');$('gear').onclick=toggleGear;
 $('camBtn').onclick=()=>{camMode=1-camMode;};$('sndBtn').onclick=()=>{soundOn=!soundOn;$('sndBtn').textContent=T(soundOn?'sndOn':'sndOff');};
 $('endBtn').onclick=()=>{if(state==='drive')finish();};$('pauseBtn').onclick=()=>setPause(true);$('resumeBtn').onclick=()=>setPause(false);$('pRestart').onclick=()=>{$('pause').hidden=true;begin();};$('pMenu').onclick=()=>{$('pause').hidden=true;$('hud').hidden=true;resetGame();state='menu';$('start').hidden=false;};
 function begin(){
   mode=$('modeFree').checked?'free':'course';hintsOn=$('hintsOn').checked;resetGame();for(const k in inp)inp[k]=0;
   try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume();}catch(e){}
+  try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});}catch(e){}
+  $('knob').style.transform='';if(TOUCH&&window.innerHeight>window.innerWidth)setTimeout(()=>note(T('rotate')),400);
   $('start').hidden=true;$('result').hidden=true;$('hud').hidden=false;lastHint=null;$('hint').hidden=true;state='drive';canvas.focus&&canvas.focus();
 }
 $('startBtn').onclick=begin;$('retryBtn').onclick=begin;
