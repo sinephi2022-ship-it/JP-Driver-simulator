@@ -56,10 +56,10 @@ function buildWorld(){
   const idxR=(e,s0,s1)=>[Math.min(e.n-2,idxAt(e,Math.max(0,s0))+(s0>0?1:0)),Math.min(e.n-1,idxAt(e,Math.min(e.len,s1)))];
   for(const e of ED){strip(e,0,e.n-1,e.w,-e.w,0.07,RM[e.kind]);
     let st=-1;for(let i=0;i<=e.n;i++){const wide=i<e.n&&e.wl[i]>e.w+0.3;if(wide&&st<0)st=i;if(!wide&&st>=0){strip(e,Math.max(0,st-1),Math.min(e.n-1,i),k=>e.wl[k],e.w,0.07,RM.extra);st=-1;}}
-    if(e.walk){const [i0,i1]=idxR(e,e.a.r+2.5,e.len-e.b.r-2.5);if(i1>i0){strip(e,i0,i1,e.w+2.7,e.w,0.2,walkMat);strip(e,i0,i1,-e.w,-e.w-2.7,0.2,walkMat);}}
+    if(e.walk){const [i0,i1]=idxR(e,e.a.r+4.6,e.len-e.b.r-4.6);if(i1>i0){strip(e,i0,i1,e.w+2.7,e.w,0.2,walkMat);strip(e,i0,i1,-e.w,-e.w-2.7,0.2,walkMat);}}
     if(e.kind==='mount'||e.kind==='coast'){wall(e,0,e.n-1,e.w+0.5,0.35,0.8,railing).material.side=THREE.DoubleSide;wall(e,0,e.n-1,-e.w-0.5,0.35,0.8,railing);}}
   railing.side=conc.side=THREE.DoubleSide;
-  for(const k in ND){const n=ND[k];if(!n.r)continue;const m=new THREE.Mesh(new THREE.CircleGeometry(n.r+0.9,28),baseMat);m.rotation.x=-Math.PI/2;m.position.set(n.x,n.y+0.085,n.z);scene.add(m);}
+  for(const k in ND){const n=ND[k];if(!n.r)continue;const m=new THREE.Mesh(new THREE.CircleGeometry(n.r+4.4,36),baseMat);m.rotation.x=-Math.PI/2;m.position.set(n.x,n.y+0.085,n.z);scene.add(m);}
   // --- markings, signals, signs
   const white=decalMat({color:0xf0f2f4});
   const zebraT=n=>{const t=cv(64,8,(c)=>{c.fillStyle='#f0f2f4';c.fillRect(0,0,32,8);});t.wrapS=THREE.RepeatWrapping;t.repeat.x=n;return decalMat({map:t});},zebra={};

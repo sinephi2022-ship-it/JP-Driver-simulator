@@ -41,8 +41,8 @@ function drawBigMap(){
   g.setLineDash([7,6]);g.strokeStyle='#b9a98e';g.lineWidth=2;g.beginPath();g.moveTo(X(-260),Z(ZR));g.lineTo(X(1090),Z(ZR));g.stroke();g.setLineDash([]);
   g.textAlign='center';g.textBaseline='middle';
   for(const q in ND){const n=ND[q];if(!n.name)continue;g.fillStyle=n.ctrl==='sig'?'#1fc79a':n.ctrl==='stop'?'#e3414a':'#c9d2dc';g.beginPath();g.arc(X(n.x),Z(n.z),3.5,0,7);g.fill();}
-  g.font='700 13px '+FONT;for(const p of PLACES){const x=X(p[2]),z=Z(p[3]),sel=nav&&nav.name===p[0];g.fillStyle=sel?'#ff5a62':'#f6b40e';g.fillRect(x-4,z-4,8,8);g.lineWidth=3;g.strokeStyle='#16202e';g.strokeText(p[0],x,z-12);g.fillStyle=sel?'#ffb3b7':'#f6e3a8';g.fillText(p[0],x,z-12);}
-  g.fillStyle='#9fb0c2';g.font='700 15px '+FONT;g.fillText('若葉市',X(450),Z(-120));g.fillText('青葉山',X(300),Z(-1300));g.fillText('山手町',X(600),Z(-2880));g.fillText('海',X(1230),Z(-900));
+  g.font='700 19px '+FONT;for(const p of PLACES){const x=X(p[2]),z=Z(p[3]),sel=nav&&nav.name===p[0];g.fillStyle=sel?'#ff5a62':'#f6b40e';g.fillRect(x-4,z-4,8,8);g.lineWidth=3;g.strokeStyle='#16202e';g.strokeText(p[0],x,z-12);g.fillStyle=sel?'#ffb3b7':'#f6e3a8';g.fillText(p[0],x,z-12);}
+  g.fillStyle='#9fb0c2';g.font='700 24px '+FONT;g.fillText('若葉市',X(450),Z(-120));g.fillText('青葉山',X(300),Z(-1300));g.fillText('山手町',X(600),Z(-2880));g.fillText('海',X(1230),Z(-900));
   g.save();g.translate(X(car.x),Z(car.z));g.rotate(car.a);g.fillStyle='#fff';g.strokeStyle='#0f1622';g.lineWidth=2;g.beginPath();g.moveTo(0,-12);g.lineTo(8,9);g.lineTo(0,5);g.lineTo(-8,9);g.closePath();g.fill();g.stroke();g.restore();
 }
 let bigK=null;
@@ -58,7 +58,7 @@ function hud(dt){
     placeStalks();
     const gi=GEARS.indexOf(car.gear),sp=$('gearStrip').children;for(let q=0;q<4;q++)sp[q].className=q===gi?'on':'';}$('dash').classList.toggle('fp',camMode===0);setTxt('lightBtn',T(env.lights?'lightOn':'lightOff'));$('lightBtn').classList.toggle('lit',env.lights);$('map').classList.toggle('fp',camMode===0);
 }
-const camV=new THREE.Vector3();let dbgCam=null;
+let simN=1;const camV=new THREE.Vector3();let dbgCam=null;
 function view(dt){
   carMesh.rotation.order='YXZ';carMesh.position.set(car.x,car.y+0.07,car.z);carMesh.rotation.set(car.pitch,-car.a,0);
   const fp=state!=='menu'&&camMode===0,fov=app.clientWidth<app.clientHeight?82:fp?74:62;if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}
@@ -73,8 +73,8 @@ function view(dt){
 let prev=0,fpsN=0,fpsT=0,quality=1,lowFx=false;
 function frame(ts){
   const dt=Math.min(0.05,(ts-prev)/1000||0.016);prev=ts;
-  if(state==='drive'){if(autoOn)autopilot(dt);drive(dt);rules(dt);}
-  if(state!=='pause'&&state!=='map')world(dt);view(dt);if(state==='drive'){hud(dt);const fc=fcount++;if(fc%3===0)drawMap();
+  for(let q=0;q<simN;q++){if(state==='drive'){if(autoOn)autopilot(dt);drive(dt);rules(dt);}
+  if(state!=='pause'&&state!=='map')world(dt);}view(dt);if(state==='drive'){hud(dt);const fc=fcount++;if(fc%3===0)drawMap();
     // mirrors: one of the three is re-rendered per frame (every other frame on phones / when the frame rate is low)
     if(camMode===0){if(fc&1)drawCluster(dt*2);if(fc%3===0)mapTex.needsUpdate=true;const slow=TOUCH||lowFx,q=slow?(fc&1?-1:(fc>>1)%4):fc%4;
       if(q>=0){cockpit.visible=false;bodyMesh.visible=true;const rt=q===1?rtL:q===3?rtR:rtRear;renderer.setRenderTarget(rt);renderer.render(scene,q===1?camL:q===3?camR:camRear);renderer.setRenderTarget(null);cockpit.visible=true;bodyMesh.visible=false;}}}

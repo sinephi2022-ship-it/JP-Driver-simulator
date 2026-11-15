@@ -61,8 +61,8 @@ function rules(dt){
     if(!e.feat.some(f=>f.t==='xwalk'))ped.threat=false;
   }
   // --- after a junction: which way did we go?
-  if(pending){const p=pending,dn=Math.hypot(car.x-p.n.x,car.z-p.n.z);if(dn<p.n.r)p.inside=true;
-    if(p.inside&&dn>p.n.r+2.5){pending=null;if(e!==p.e&&(e.a===p.n||e.b===p.n)){const tc=turnClass(p.n,p.e,e);
+  if(pending){const p=pending,dn=Math.hypot(car.x-p.n.x,car.z-p.n.z);if(dn<p.n.r+3.2)p.inside=true;
+    if(p.inside&&dn>p.n.r+4.4){pending=null;if(e!==p.e&&(e.a===p.n||e.b===p.n)){const tc=turnClass(p.n,p.e,e);
         if(tc==='L'||tc==='R'){const on=p.on[tc];if(on==null)violate('nosig');else if(on<24)violate('latesig');if(blink===tc)blink=null;rowEnterT=time;laneId=null;}
         if(guide){if(p.n===guide.wp[guide.wi]){guide.wi++;gCache.k='';}if(mode==='course'&&p.next&&p.next!=='G'&&p.next!==e)note(T('off'));}}}}
   if(nav&&guide&&guide.wi>=guide.wp.length-1&&Math.hypot(car.x-guide.wp[guide.wp.length-1].x,car.z-guide.wp[guide.wp.length-1].z)<Math.max(14,guide.wp[guide.wp.length-1].r+4)){note(T('navDone')(nav.name));beep(880,0.25,0.05,'sine');clearNav();}
@@ -77,7 +77,7 @@ function rules(dt){
       else ins=[laneId===0?'⬅':'↑',T(laneId===0?'hwBack':'hwEnd'),dist(e.len-s)];
       if(!e.feat.length)setInstr(ins[0],ins[1],ins[2]);
       const free=!(nbm&&s>PAinfo.works[0]-260&&s<PAinfo.works[1]+60);
-      if(s>300&&s<e.len-260&&kmh<50&&lead>50&&car.gear==='D'&&laneId!==2){hwS.slowT+=dt;if(hwS.slowT>7){hwS.slowT=0;violate('minspeed');}}else hwS.slowT=0;
+      if(s>300&&s<e.len-260&&kmh<50&&lead>50&&car.gear==='D'&&laneId!==2){hwS.slowT+=dt;if(hwS.slowT>7&&!hwS.slowF){hwS.slowF=true;violate('minspeed');}}else{hwS.slowT=0;if(kmh>55)hwS.slowF=false;}
       if(car.v>15&&lead<car.v*0.75){hwS.gapT+=dt;hint='hGap';if(hwS.gapT>2.5){hwS.gapT=0;violate('gap');}}else{hwS.gapT=0;if(lead<car.v*2.2&&laneId===1&&free&&!env.inTunnel)hint=hint||'hOvertake';}
       if(laneId===0&&free){hwS.passT+=dt;if(hwS.passT>10&&lead>60)hint='hKeepLeft';if(hwS.passT>24){hwS.passT=0;violate('passlane');}}else hwS.passT=0;
       if(env.inTunnel&&!hwS.was){env.flash=0.62;env.flashCol='#000';}if(!env.inTunnel&&hwS.was&&env.night<0.5){env.flash=0.85;env.flashCol='#fff';}hwS.was=env.inTunnel;

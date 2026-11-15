@@ -40,7 +40,7 @@ function stalkCtl(id,onTap,onFlick){const el=$(id);let pid=null,y0=0,done=false;
   const up=e=>{if(e.pointerId!==pid)return;pid=null;if(!done&&e.type==='pointerup'){buzz();onTap();}};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('contextmenu',e=>e.preventDefault());}
 stalkCtl('stkR',()=>toggleLights(),d=>toggleBlink(d<0?'L':'R'));stalkCtl('stkL',()=>{env.wipers=!env.wipers;},()=>{env.wipers=!env.wipers;});
 // big map: view the town, pick a destination
-openMap=function(){if(state!=='drive')return;state='map';for(const k in inp)inp[k]=0;$('mapTip').textContent=T(mode==='free'?'mapTitle':'mapRO');$('navClear').hidden=!nav;drawBigMap();$('bigmap').hidden=false;};
+openMap=function(){if(state!=='drive')return;state='map';for(const k in inp)inp[k]=0;$('mapTip').textContent=T(mode==='free'?'mapTitle':'mapRO');$('navClear').hidden=!nav;drawBigMap();$('bigmap').hidden=false;const c=$('bigC'),bm=$('bigmap');bm.scrollTop=Math.max(0,c.offsetTop+(car.z-bigK.z0)*bigK.k*c.clientHeight/c.height-bm.clientHeight/2);};
 closeMap=function(){if(state==='map'){state='drive';$('bigmap').hidden=true;}};
 $('map').addEventListener('click',openMap);$('mapBtn').onclick=openMap;$('mapClose').onclick=closeMap;$('navClear').onclick=()=>{clearNav();closeMap();};
 $('bigC').addEventListener('click',e=>{if(mode!=='free'||!bigK)return;const c=$('bigC'),r=c.getBoundingClientRect(),wx=((e.clientX-r.left)/r.width*c.width-bigK.ox)/bigK.k+bigK.x0,wz=(e.clientY-r.top)/r.height*c.height/bigK.k+bigK.z0;
@@ -71,7 +71,7 @@ $('menuBtn').onclick=()=>{resetGame();state='menu';$('result').hidden=true;$('st
 ['langZh','langJa'].forEach(id=>$(id).addEventListener('change',e=>{lang=e.target.value;try{localStorage.setItem('rojo-lang',lang);}catch(_){}applyLang();}));
 try{const s=localStorage.getItem('rojo-lang');if(s==='ja'){lang='ja';$('langJa').checked=true;}}catch(_){}
 
-window.__sim={auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
+window.__sim={speed(n){simN=n;},auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
 /* ---------- boot ---------- */
 let booted=false;
 function boot(){if(booted)return;booted=true;buildWorld();resetGame();applyLang();resize();requestAnimationFrame(frame);}

@@ -56,7 +56,7 @@ function onRoad(x,z){const cx=Math.floor(x/CELL),cz=Math.floor(z/CELL);
   for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const l=HASH.get((cx+a)+','+(cz+b));if(!l)continue;for(let q=0;q<l.length;q+=2){const e=ED[l[q]],i=l[q+1];
     const x0=e.px[i],z0=e.pz[i],dx=e.px[i+1]-x0,dz=e.pz[i+1]-z0,l2=dx*dx+dz*dz,tr=((x-x0)*dx+(z-z0)*dz)/l2;if(tr<-0.3||tr>1.3)continue;const t=clamp(tr,0,1),m=Math.sqrt(l2),u=((x-x0)*dz-(z-z0)*dx)/m,al=Math.abs(tr-t)*m;
     if(al<0.8&&u<=e.wl[i]-0.75&&u>=-(e.wr[i]-0.75))return true;}}
-  for(const k in ND){const n=ND[k];if(n.r&&Math.abs(x-n.x)<n.r&&Math.abs(z-n.z)<n.r&&Math.hypot(x-n.x,z-n.z)<n.r-0.2)return true;}return false;}
+  for(const k in ND){const n=ND[k];if(n.r&&Math.abs(x-n.x)<n.r+3.7&&Math.abs(z-n.z)<n.r+3.7&&Math.hypot(x-n.x,z-n.z)<n.r+3.6)return true;}return false;}
 // shortest route over directed edges (no U-turns): returns [[edge,dir],...] from the far end of (e0,d0) to node `to`
 function findRoute(e0,d0,to){const dist=new Map(),prev=new Map(),key=(e,d)=>e.i*2+(d>0?1:0),open=[[0,e0,d0]];dist.set(key(e0,d0),0);let goal=null;
   while(open.length){let bi=0;for(let q=1;q<open.length;q++)if(open[q][0]<open[bi][0])bi=q;const [c,e,d]=open.splice(bi,1)[0],n=d>0?e.b:e.a;if(c>dist.get(key(e,d)))continue;if(n===to){goal=[e,d];break;}

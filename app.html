@@ -54,7 +54,7 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
 .stk{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);min-width:74px;height:42px;padding:0 10px;border-radius:21px;background:rgba(15,22,34,.5);border:1.5px solid rgba(255,255,255,.6);font:700 12px/1 var(--f-display);pointer-events:auto;touch-action:none;display:none;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(0,0,0,.45)}
 .stk i{font-style:normal;color:var(--go)}.stk.on{border-color:var(--go);color:var(--go);background:rgba(31,199,154,.22)}
 @media (hover:none),(pointer:coarse){.stk{display:flex}}
-#bigmap .card{max-height:100%}
+#bigmap{align-items:flex-start}#bigmap .card{margin:0 auto}#bigmap .row{position:sticky;bottom:0;background:var(--night);padding-block:8px}
 #glare{position:absolute;inset:0;pointer-events:none;opacity:0;background:#fff}
 
 #toasts{position:absolute;left:0;top:132px;display:grid;gap:6px;width:min(330px,82vw)}
@@ -275,7 +275,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
   <div id="bigmap" class="overlay" hidden>
     <div class="card" style="width:min(820px,100%);gap:10px">
       <p class="note" id="mapTip" style="font-size:14px;color:var(--paper)"></p>
-      <canvas id="bigC" width="1000" height="840" style="display:block;margin:auto;width:auto;height:auto;max-width:100%;max-height:calc(100vh - 150px);border-radius:10px;cursor:pointer;touch-action:manipulation"></canvas>
+      <canvas id="bigC" width="900" height="1850" style="display:block;margin:auto;width:min(100%,600px);height:auto;border-radius:10px;cursor:pointer;touch-action:pan-y"></canvas>
       <div class="row"><button class="cta" id="mapClose" type="button" data-t="close"></button><button class="ghost" id="navClear" type="button" data-t="navClear"></button></div>
     </div>
   </div>
@@ -513,7 +513,7 @@ function onRoad(x,z){const cx=Math.floor(x/CELL),cz=Math.floor(z/CELL);
   for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const l=HASH.get((cx+a)+','+(cz+b));if(!l)continue;for(let q=0;q<l.length;q+=2){const e=ED[l[q]],i=l[q+1];
     const x0=e.px[i],z0=e.pz[i],dx=e.px[i+1]-x0,dz=e.pz[i+1]-z0,l2=dx*dx+dz*dz,tr=((x-x0)*dx+(z-z0)*dz)/l2;if(tr<-0.3||tr>1.3)continue;const t=clamp(tr,0,1),m=Math.sqrt(l2),u=((x-x0)*dz-(z-z0)*dx)/m,al=Math.abs(tr-t)*m;
     if(al<0.8&&u<=e.wl[i]-0.75&&u>=-(e.wr[i]-0.75))return true;}}
-  for(const k in ND){const n=ND[k];if(n.r&&Math.abs(x-n.x)<n.r&&Math.abs(z-n.z)<n.r&&Math.hypot(x-n.x,z-n.z)<n.r-0.2)return true;}return false;}
+  for(const k in ND){const n=ND[k];if(n.r&&Math.abs(x-n.x)<n.r+3.7&&Math.abs(z-n.z)<n.r+3.7&&Math.hypot(x-n.x,z-n.z)<n.r+3.6)return true;}return false;}
 // shortest route over directed edges (no U-turns): returns [[edge,dir],...] from the far end of (e0,d0) to node `to`
 function findRoute(e0,d0,to){const dist=new Map(),prev=new Map(),key=(e,d)=>e.i*2+(d>0?1:0),open=[[0,e0,d0]];dist.set(key(e0,d0),0);let goal=null;
   while(open.length){let bi=0;for(let q=1;q<open.length;q++)if(open[q][0]<open[bi][0])bi=q;const [c,e,d]=open.splice(bi,1)[0],n=d>0?e.b:e.a;if(c>dist.get(key(e,d)))continue;if(n===to){goal=[e,d];break;}
@@ -580,10 +580,10 @@ function buildWorld(){
   const idxR=(e,s0,s1)=>[Math.min(e.n-2,idxAt(e,Math.max(0,s0))+(s0>0?1:0)),Math.min(e.n-1,idxAt(e,Math.min(e.len,s1)))];
   for(const e of ED){strip(e,0,e.n-1,e.w,-e.w,0.07,RM[e.kind]);
     let st=-1;for(let i=0;i<=e.n;i++){const wide=i<e.n&&e.wl[i]>e.w+0.3;if(wide&&st<0)st=i;if(!wide&&st>=0){strip(e,Math.max(0,st-1),Math.min(e.n-1,i),k=>e.wl[k],e.w,0.07,RM.extra);st=-1;}}
-    if(e.walk){const [i0,i1]=idxR(e,e.a.r+2.5,e.len-e.b.r-2.5);if(i1>i0){strip(e,i0,i1,e.w+2.7,e.w,0.2,walkMat);strip(e,i0,i1,-e.w,-e.w-2.7,0.2,walkMat);}}
+    if(e.walk){const [i0,i1]=idxR(e,e.a.r+4.6,e.len-e.b.r-4.6);if(i1>i0){strip(e,i0,i1,e.w+2.7,e.w,0.2,walkMat);strip(e,i0,i1,-e.w,-e.w-2.7,0.2,walkMat);}}
     if(e.kind==='mount'||e.kind==='coast'){wall(e,0,e.n-1,e.w+0.5,0.35,0.8,railing).material.side=THREE.DoubleSide;wall(e,0,e.n-1,-e.w-0.5,0.35,0.8,railing);}}
   railing.side=conc.side=THREE.DoubleSide;
-  for(const k in ND){const n=ND[k];if(!n.r)continue;const m=new THREE.Mesh(new THREE.CircleGeometry(n.r+0.9,28),baseMat);m.rotation.x=-Math.PI/2;m.position.set(n.x,n.y+0.085,n.z);scene.add(m);}
+  for(const k in ND){const n=ND[k];if(!n.r)continue;const m=new THREE.Mesh(new THREE.CircleGeometry(n.r+4.4,36),baseMat);m.rotation.x=-Math.PI/2;m.position.set(n.x,n.y+0.085,n.z);scene.add(m);}
   // --- markings, signals, signs
   const white=decalMat({color:0xf0f2f4});
   const zebraT=n=>{const t=cv(64,8,(c)=>{c.fillStyle='#f0f2f4';c.fillRect(0,0,32,8);});t.wrapS=THREE.RepeatWrapping;t.repeat.x=n;return decalMat({map:t});},zebra={};
@@ -946,8 +946,8 @@ function rules(dt){
     if(!e.feat.some(f=>f.t==='xwalk'))ped.threat=false;
   }
   // --- after a junction: which way did we go?
-  if(pending){const p=pending,dn=Math.hypot(car.x-p.n.x,car.z-p.n.z);if(dn<p.n.r)p.inside=true;
-    if(p.inside&&dn>p.n.r+2.5){pending=null;if(e!==p.e&&(e.a===p.n||e.b===p.n)){const tc=turnClass(p.n,p.e,e);
+  if(pending){const p=pending,dn=Math.hypot(car.x-p.n.x,car.z-p.n.z);if(dn<p.n.r+3.2)p.inside=true;
+    if(p.inside&&dn>p.n.r+4.4){pending=null;if(e!==p.e&&(e.a===p.n||e.b===p.n)){const tc=turnClass(p.n,p.e,e);
         if(tc==='L'||tc==='R'){const on=p.on[tc];if(on==null)violate('nosig');else if(on<24)violate('latesig');if(blink===tc)blink=null;rowEnterT=time;laneId=null;}
         if(guide){if(p.n===guide.wp[guide.wi]){guide.wi++;gCache.k='';}if(mode==='course'&&p.next&&p.next!=='G'&&p.next!==e)note(T('off'));}}}}
   if(nav&&guide&&guide.wi>=guide.wp.length-1&&Math.hypot(car.x-guide.wp[guide.wp.length-1].x,car.z-guide.wp[guide.wp.length-1].z)<Math.max(14,guide.wp[guide.wp.length-1].r+4)){note(T('navDone')(nav.name));beep(880,0.25,0.05,'sine');clearNav();}
@@ -962,7 +962,7 @@ function rules(dt){
       else ins=[laneId===0?'⬅':'↑',T(laneId===0?'hwBack':'hwEnd'),dist(e.len-s)];
       if(!e.feat.length)setInstr(ins[0],ins[1],ins[2]);
       const free=!(nbm&&s>PAinfo.works[0]-260&&s<PAinfo.works[1]+60);
-      if(s>300&&s<e.len-260&&kmh<50&&lead>50&&car.gear==='D'&&laneId!==2){hwS.slowT+=dt;if(hwS.slowT>7){hwS.slowT=0;violate('minspeed');}}else hwS.slowT=0;
+      if(s>300&&s<e.len-260&&kmh<50&&lead>50&&car.gear==='D'&&laneId!==2){hwS.slowT+=dt;if(hwS.slowT>7&&!hwS.slowF){hwS.slowF=true;violate('minspeed');}}else{hwS.slowT=0;if(kmh>55)hwS.slowF=false;}
       if(car.v>15&&lead<car.v*0.75){hwS.gapT+=dt;hint='hGap';if(hwS.gapT>2.5){hwS.gapT=0;violate('gap');}}else{hwS.gapT=0;if(lead<car.v*2.2&&laneId===1&&free&&!env.inTunnel)hint=hint||'hOvertake';}
       if(laneId===0&&free){hwS.passT+=dt;if(hwS.passT>10&&lead>60)hint='hKeepLeft';if(hwS.passT>24){hwS.passT=0;violate('passlane');}}else hwS.passT=0;
       if(env.inTunnel&&!hwS.was){env.flash=0.62;env.flashCol='#000';}if(!env.inTunnel&&hwS.was&&env.night<0.5){env.flash=0.85;env.flashCol='#fff';}hwS.was=env.inTunnel;
@@ -981,7 +981,7 @@ function rules(dt){
 /* ---------- simulation ---------- */
 const PL={e:null},PL2={e:null};
 function locatePlayer(dt){const nr=nearest(car.x,car.z,PL,1);if(!nr)return;const e=nr.e,i=nr.i,fx=Math.sin(car.a),fz=-Math.cos(car.a),al=fx*nr.tx+fz*nr.tz;
-  car.inNode=null;for(const n of[e.a,e.b])if(n.r&&Math.hypot(car.x-n.x,car.z-n.z)<n.r+0.5)car.inNode=n;
+  car.inNode=null;for(const n of[e.a,e.b])if(n.r&&Math.hypot(car.x-n.x,car.z-n.z)<n.r+2)car.inNode=n;
   car.e=e;car.s=nr.s;car.u=nr.u;car.tx=nr.tx;car.tz=nr.tz;car.dir=Math.abs(al)>0.5?Math.sign(al):0;
   const g=(e.py[i+1]-e.py[i])/(e.ps[i+1]-e.ps[i]);car.grade=g;car.slope=g*al;const k=Math.min(1,dt*10);car.y+=(nr.y-car.y)*k;car.pitch+=(Math.atan(g*al)-car.pitch)*k;}
 function drive(dt){
@@ -1309,8 +1309,8 @@ function drawBigMap(){
   g.setLineDash([7,6]);g.strokeStyle='#b9a98e';g.lineWidth=2;g.beginPath();g.moveTo(X(-260),Z(ZR));g.lineTo(X(1090),Z(ZR));g.stroke();g.setLineDash([]);
   g.textAlign='center';g.textBaseline='middle';
   for(const q in ND){const n=ND[q];if(!n.name)continue;g.fillStyle=n.ctrl==='sig'?'#1fc79a':n.ctrl==='stop'?'#e3414a':'#c9d2dc';g.beginPath();g.arc(X(n.x),Z(n.z),3.5,0,7);g.fill();}
-  g.font='700 13px '+FONT;for(const p of PLACES){const x=X(p[2]),z=Z(p[3]),sel=nav&&nav.name===p[0];g.fillStyle=sel?'#ff5a62':'#f6b40e';g.fillRect(x-4,z-4,8,8);g.lineWidth=3;g.strokeStyle='#16202e';g.strokeText(p[0],x,z-12);g.fillStyle=sel?'#ffb3b7':'#f6e3a8';g.fillText(p[0],x,z-12);}
-  g.fillStyle='#9fb0c2';g.font='700 15px '+FONT;g.fillText('若葉市',X(450),Z(-120));g.fillText('青葉山',X(300),Z(-1300));g.fillText('山手町',X(600),Z(-2880));g.fillText('海',X(1230),Z(-900));
+  g.font='700 19px '+FONT;for(const p of PLACES){const x=X(p[2]),z=Z(p[3]),sel=nav&&nav.name===p[0];g.fillStyle=sel?'#ff5a62':'#f6b40e';g.fillRect(x-4,z-4,8,8);g.lineWidth=3;g.strokeStyle='#16202e';g.strokeText(p[0],x,z-12);g.fillStyle=sel?'#ffb3b7':'#f6e3a8';g.fillText(p[0],x,z-12);}
+  g.fillStyle='#9fb0c2';g.font='700 24px '+FONT;g.fillText('若葉市',X(450),Z(-120));g.fillText('青葉山',X(300),Z(-1300));g.fillText('山手町',X(600),Z(-2880));g.fillText('海',X(1230),Z(-900));
   g.save();g.translate(X(car.x),Z(car.z));g.rotate(car.a);g.fillStyle='#fff';g.strokeStyle='#0f1622';g.lineWidth=2;g.beginPath();g.moveTo(0,-12);g.lineTo(8,9);g.lineTo(0,5);g.lineTo(-8,9);g.closePath();g.fill();g.stroke();g.restore();
 }
 let bigK=null;
@@ -1326,7 +1326,7 @@ function hud(dt){
     placeStalks();
     const gi=GEARS.indexOf(car.gear),sp=$('gearStrip').children;for(let q=0;q<4;q++)sp[q].className=q===gi?'on':'';}$('dash').classList.toggle('fp',camMode===0);setTxt('lightBtn',T(env.lights?'lightOn':'lightOff'));$('lightBtn').classList.toggle('lit',env.lights);$('map').classList.toggle('fp',camMode===0);
 }
-const camV=new THREE.Vector3();let dbgCam=null;
+let simN=1;const camV=new THREE.Vector3();let dbgCam=null;
 function view(dt){
   carMesh.rotation.order='YXZ';carMesh.position.set(car.x,car.y+0.07,car.z);carMesh.rotation.set(car.pitch,-car.a,0);
   const fp=state!=='menu'&&camMode===0,fov=app.clientWidth<app.clientHeight?82:fp?74:62;if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}
@@ -1341,8 +1341,8 @@ function view(dt){
 let prev=0,fpsN=0,fpsT=0,quality=1,lowFx=false;
 function frame(ts){
   const dt=Math.min(0.05,(ts-prev)/1000||0.016);prev=ts;
-  if(state==='drive'){if(autoOn)autopilot(dt);drive(dt);rules(dt);}
-  if(state!=='pause'&&state!=='map')world(dt);view(dt);if(state==='drive'){hud(dt);const fc=fcount++;if(fc%3===0)drawMap();
+  for(let q=0;q<simN;q++){if(state==='drive'){if(autoOn)autopilot(dt);drive(dt);rules(dt);}
+  if(state!=='pause'&&state!=='map')world(dt);}view(dt);if(state==='drive'){hud(dt);const fc=fcount++;if(fc%3===0)drawMap();
     // mirrors: one of the three is re-rendered per frame (every other frame on phones / when the frame rate is low)
     if(camMode===0){if(fc&1)drawCluster(dt*2);if(fc%3===0)mapTex.needsUpdate=true;const slow=TOUCH||lowFx,q=slow?(fc&1?-1:(fc>>1)%4):fc%4;
       if(q>=0){cockpit.visible=false;bodyMesh.visible=true;const rt=q===1?rtL:q===3?rtR:rtRear;renderer.setRenderTarget(rt);renderer.render(scene,q===1?camL:q===3?camR:camRear);renderer.setRenderTarget(null);cockpit.visible=true;bodyMesh.visible=false;}}}
@@ -1394,7 +1394,7 @@ function stalkCtl(id,onTap,onFlick){const el=$(id);let pid=null,y0=0,done=false;
   const up=e=>{if(e.pointerId!==pid)return;pid=null;if(!done&&e.type==='pointerup'){buzz();onTap();}};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('contextmenu',e=>e.preventDefault());}
 stalkCtl('stkR',()=>toggleLights(),d=>toggleBlink(d<0?'L':'R'));stalkCtl('stkL',()=>{env.wipers=!env.wipers;},()=>{env.wipers=!env.wipers;});
 // big map: view the town, pick a destination
-openMap=function(){if(state!=='drive')return;state='map';for(const k in inp)inp[k]=0;$('mapTip').textContent=T(mode==='free'?'mapTitle':'mapRO');$('navClear').hidden=!nav;drawBigMap();$('bigmap').hidden=false;};
+openMap=function(){if(state!=='drive')return;state='map';for(const k in inp)inp[k]=0;$('mapTip').textContent=T(mode==='free'?'mapTitle':'mapRO');$('navClear').hidden=!nav;drawBigMap();$('bigmap').hidden=false;const c=$('bigC'),bm=$('bigmap');bm.scrollTop=Math.max(0,c.offsetTop+(car.z-bigK.z0)*bigK.k*c.clientHeight/c.height-bm.clientHeight/2);};
 closeMap=function(){if(state==='map'){state='drive';$('bigmap').hidden=true;}};
 $('map').addEventListener('click',openMap);$('mapBtn').onclick=openMap;$('mapClose').onclick=closeMap;$('navClear').onclick=()=>{clearNav();closeMap();};
 $('bigC').addEventListener('click',e=>{if(mode!=='free'||!bigK)return;const c=$('bigC'),r=c.getBoundingClientRect(),wx=((e.clientX-r.left)/r.width*c.width-bigK.ox)/bigK.k+bigK.x0,wz=(e.clientY-r.top)/r.height*c.height/bigK.k+bigK.z0;
@@ -1425,7 +1425,7 @@ $('menuBtn').onclick=()=>{resetGame();state='menu';$('result').hidden=true;$('st
 ['langZh','langJa'].forEach(id=>$(id).addEventListener('change',e=>{lang=e.target.value;try{localStorage.setItem('rojo-lang',lang);}catch(_){}applyLang();}));
 try{const s=localStorage.getItem('rojo-lang');if(s==='ja'){lang='ja';$('langJa').checked=true;}}catch(_){}
 
-window.__sim={auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
+window.__sim={speed(n){simN=n;},auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
 /* ---------- boot ---------- */
 let booted=false;
 function boot(){if(booted)return;booted=true;buildWorld();resetGame();applyLang();resize();requestAnimationFrame(frame);}
@@ -1437,23 +1437,25 @@ let tramHold=null;
 let autoOn=false,autoLog={stops:0},apPlan=null;
 function autopilot(dt){
   const e=car.e,dir=car.dir||1;if(!e)return;if(car.gear!=='D'){car.gear='D';car.hb=false;}
-  if(car.inNode&&apPlan&&apPlan.n===car.inNode||apPlan&&apPlan.f!==e&&Math.hypot(car.x-apPlan.n.x,car.z-apPlan.n.z)<apPlan.n.r+4){ // crossing a junction: aim along the planned exit
+  if(car.inNode&&apPlan&&apPlan.n===car.inNode||apPlan&&apPlan.f!==e&&Math.hypot(car.x-apPlan.n.x,car.z-apPlan.n.z)<apPlan.n.r+2.5){ // crossing a junction: aim along the planned exit
     const f=apPlan.f,fd=f.a===apPlan.n?1:-1,d=Math.hypot(car.x-apPlan.n.x,car.z-apPlan.n.z),rest=apPlan.n.r+5+(car.inNode?0:3),tp=edgePos(f,fd>0?rest:f.len-rest,f.oneway?laneU(f,1,0):laneU(f,fd,0));
     let err=Math.atan2(tp.x-car.x,-(tp.z-car.z))-car.a;while(err>Math.PI)err-=2*Math.PI;while(err<-Math.PI)err+=2*Math.PI;inp.steerA=clamp(err*2.4,-1,1);const v=Math.abs(car.v);inp.gas=v<(apPlan.tc==='S'?7:4)?0.6:0;inp.brake=v>(apPlan.tc==='S'?9:5.5)?0.4:0;
     for(const o of npcs){const rx=o.x-car.x,rz=o.z-car.z,al=rx*Math.sin(car.a)-rz*Math.cos(car.a),lt=Math.abs(rx*-Math.cos(car.a)-rz*Math.sin(car.a));if(al>0&&al<9&&lt<1.8){inp.gas=0;inp.brake=0.7;}}return;}
   if(apPlan&&apPlan.f===e)apPlan=null;
   const n=dir>0?e.b:e.a,D=dir>0?e.len-car.s:car.s,v=Math.abs(car.v);let lane=e.oneway?laneU(e,1,0):laneU(e,dir,0),vt=Math.min(e.limit,curLimit)/3.6*0.9,brake=false;
+  env.lights=env.night>0.5||(e.kind==='hw'&&car.s>e.tun[0]-160&&car.s<e.tun[1]+20);
+  if(e===PAinfo.nb){const w=PAinfo.works;if(car.s>w[0]-330&&car.s<w[1]+30){lane=laneU(e,1,1);if(car.u>0)blink='R';}else if(car.s>=w[1]+30&&car.u<0&&car.s<w[1]+200){blink='L';}}
   if(obstZone.e===e&&dir===obstZone.dir&&car.s-obstZone.s<26&&car.s-obstZone.s>-10)lane=dir*-1.0;
   if(child.e===e&&dir===1&&child.s-car.s<26&&child.s-car.s>-9)lane=-0.3;
   const G=mode==='hw'?GOAL2:GOAL,goal=guide&&guide.wi>=guide.wp.length-1&&e===G.e;if(goal){lane=dir*(e.w/2+0.55);blink='L';}
   if(tram.dwell>0&&e===tram.e&&dir===tram.dir){const rel=(tram.es-car.s)*dir-tram.veh.hl-2.3;if(tram.stop===1&&rel>-1&&rel<40)tramHold=rel;else if(tram.stop===0&&Math.abs(rel+8)<16)vt=Math.min(vt,3.3);}
   // target point a little ahead, continuing on to the next edge through a junction
   const look=5+v*0.7;let tp;
-  if(D-n.r>look||!trk||!trk.next||trk.next==='G'||n.r===0&&n.ed.length!==2){tp=edgePos(e,car.s+dir*Math.min(look,Math.max(1,D-0.5)),lane);}
+  if(D-n.r>Math.min(look,2.5)||!trk||!trk.next||trk.next==='G'||n.r===0&&n.ed.length!==2){tp=edgePos(e,car.s+dir*Math.min(look,Math.max(1,D-0.5)),lane);}
   else{const f=trk.next,fd=f.a===n?1:-1,rest=look-(D-n.r)+n.r;tp=edgePos(f,fd>0?rest:f.len-rest,f.oneway?laneU(f,1,0):laneU(f,fd,0));}
   if(n.r===0&&n.ed.length===2&&D<look){const f=n.ed[0]===e?n.ed[1]:n.ed[0],fd=f.a===n?1:-1,rest=look-D;tp=edgePos(f,fd>0?rest:f.len-rest,f.oneway?laneU(f,1,0):laneU(f,fd,0));}
   let err=Math.atan2(tp.x-car.x,-(tp.z-car.z))-car.a;while(err>Math.PI)err-=2*Math.PI;while(err<-Math.PI)err+=2*Math.PI;inp.steerA=clamp(err*2.2,-1,1);
-  vt=Math.min(vt,Math.max(3,9-Math.abs(err)*14));
+  vt=Math.min(vt,Math.max(3,Math.max(9,vt)-Math.abs(err)*(e.kind==='hw'?60:14)));
   // junction control
   if(n.r>0&&trk&&trk.next&&trk.next!=='G'&&D<n.r+25)apPlan={n,f:trk.next,tc:trk.act};
   if(n.r>0&&trk){const g=D-FRONT-(n.r+2.4),st=n.ctrl==='sig'?sigState(n,e):null,must=n.ctrl==='stop'&&n.stops.includes(e.key)&&!trk.stopped;

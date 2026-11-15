@@ -1,7 +1,7 @@
 /* ---------- simulation ---------- */
 const PL={e:null},PL2={e:null};
 function locatePlayer(dt){const nr=nearest(car.x,car.z,PL,1);if(!nr)return;const e=nr.e,i=nr.i,fx=Math.sin(car.a),fz=-Math.cos(car.a),al=fx*nr.tx+fz*nr.tz;
-  car.inNode=null;for(const n of[e.a,e.b])if(n.r&&Math.hypot(car.x-n.x,car.z-n.z)<n.r+0.5)car.inNode=n;
+  car.inNode=null;for(const n of[e.a,e.b])if(n.r&&Math.hypot(car.x-n.x,car.z-n.z)<n.r+2)car.inNode=n;
   car.e=e;car.s=nr.s;car.u=nr.u;car.tx=nr.tx;car.tz=nr.tz;car.dir=Math.abs(al)>0.5?Math.sign(al):0;
   const g=(e.py[i+1]-e.py[i])/(e.ps[i+1]-e.ps[i]);car.grade=g;car.slope=g*al;const k=Math.min(1,dt*10);car.y+=(nr.y-car.y)*k;car.pitch+=(Math.atan(g*al)-car.pitch)*k;}
 function drive(dt){

@@ -3,23 +3,25 @@ let tramHold=null;
 let autoOn=false,autoLog={stops:0},apPlan=null;
 function autopilot(dt){
   const e=car.e,dir=car.dir||1;if(!e)return;if(car.gear!=='D'){car.gear='D';car.hb=false;}
-  if(car.inNode&&apPlan&&apPlan.n===car.inNode||apPlan&&apPlan.f!==e&&Math.hypot(car.x-apPlan.n.x,car.z-apPlan.n.z)<apPlan.n.r+4){ // crossing a junction: aim along the planned exit
+  if(car.inNode&&apPlan&&apPlan.n===car.inNode||apPlan&&apPlan.f!==e&&Math.hypot(car.x-apPlan.n.x,car.z-apPlan.n.z)<apPlan.n.r+2.5){ // crossing a junction: aim along the planned exit
     const f=apPlan.f,fd=f.a===apPlan.n?1:-1,d=Math.hypot(car.x-apPlan.n.x,car.z-apPlan.n.z),rest=apPlan.n.r+5+(car.inNode?0:3),tp=edgePos(f,fd>0?rest:f.len-rest,f.oneway?laneU(f,1,0):laneU(f,fd,0));
     let err=Math.atan2(tp.x-car.x,-(tp.z-car.z))-car.a;while(err>Math.PI)err-=2*Math.PI;while(err<-Math.PI)err+=2*Math.PI;inp.steerA=clamp(err*2.4,-1,1);const v=Math.abs(car.v);inp.gas=v<(apPlan.tc==='S'?7:4)?0.6:0;inp.brake=v>(apPlan.tc==='S'?9:5.5)?0.4:0;
     for(const o of npcs){const rx=o.x-car.x,rz=o.z-car.z,al=rx*Math.sin(car.a)-rz*Math.cos(car.a),lt=Math.abs(rx*-Math.cos(car.a)-rz*Math.sin(car.a));if(al>0&&al<9&&lt<1.8){inp.gas=0;inp.brake=0.7;}}return;}
   if(apPlan&&apPlan.f===e)apPlan=null;
   const n=dir>0?e.b:e.a,D=dir>0?e.len-car.s:car.s,v=Math.abs(car.v);let lane=e.oneway?laneU(e,1,0):laneU(e,dir,0),vt=Math.min(e.limit,curLimit)/3.6*0.9,brake=false;
+  env.lights=env.night>0.5||(e.kind==='hw'&&car.s>e.tun[0]-160&&car.s<e.tun[1]+20);
+  if(e===PAinfo.nb){const w=PAinfo.works;if(car.s>w[0]-330&&car.s<w[1]+30){lane=laneU(e,1,1);if(car.u>0)blink='R';}else if(car.s>=w[1]+30&&car.u<0&&car.s<w[1]+200){blink='L';}}
   if(obstZone.e===e&&dir===obstZone.dir&&car.s-obstZone.s<26&&car.s-obstZone.s>-10)lane=dir*-1.0;
   if(child.e===e&&dir===1&&child.s-car.s<26&&child.s-car.s>-9)lane=-0.3;
   const G=mode==='hw'?GOAL2:GOAL,goal=guide&&guide.wi>=guide.wp.length-1&&e===G.e;if(goal){lane=dir*(e.w/2+0.55);blink='L';}
   if(tram.dwell>0&&e===tram.e&&dir===tram.dir){const rel=(tram.es-car.s)*dir-tram.veh.hl-2.3;if(tram.stop===1&&rel>-1&&rel<40)tramHold=rel;else if(tram.stop===0&&Math.abs(rel+8)<16)vt=Math.min(vt,3.3);}
   // target point a little ahead, continuing on to the next edge through a junction
   const look=5+v*0.7;let tp;
-  if(D-n.r>look||!trk||!trk.next||trk.next==='G'||n.r===0&&n.ed.length!==2){tp=edgePos(e,car.s+dir*Math.min(look,Math.max(1,D-0.5)),lane);}
+  if(D-n.r>Math.min(look,2.5)||!trk||!trk.next||trk.next==='G'||n.r===0&&n.ed.length!==2){tp=edgePos(e,car.s+dir*Math.min(look,Math.max(1,D-0.5)),lane);}
   else{const f=trk.next,fd=f.a===n?1:-1,rest=look-(D-n.r)+n.r;tp=edgePos(f,fd>0?rest:f.len-rest,f.oneway?laneU(f,1,0):laneU(f,fd,0));}
   if(n.r===0&&n.ed.length===2&&D<look){const f=n.ed[0]===e?n.ed[1]:n.ed[0],fd=f.a===n?1:-1,rest=look-D;tp=edgePos(f,fd>0?rest:f.len-rest,f.oneway?laneU(f,1,0):laneU(f,fd,0));}
   let err=Math.atan2(tp.x-car.x,-(tp.z-car.z))-car.a;while(err>Math.PI)err-=2*Math.PI;while(err<-Math.PI)err+=2*Math.PI;inp.steerA=clamp(err*2.2,-1,1);
-  vt=Math.min(vt,Math.max(3,9-Math.abs(err)*14));
+  vt=Math.min(vt,Math.max(3,Math.max(9,vt)-Math.abs(err)*(e.kind==='hw'?60:14)));
   // junction control
   if(n.r>0&&trk&&trk.next&&trk.next!=='G'&&D<n.r+25)apPlan={n,f:trk.next,tc:trk.act};
   if(n.r>0&&trk){const g=D-FRONT-(n.r+2.4),st=n.ctrl==='sig'?sigState(n,e):null,must=n.ctrl==='stop'&&n.stops.includes(e.key)&&!trk.stopped;
