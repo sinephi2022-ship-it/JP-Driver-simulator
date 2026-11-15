@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Wrap app.html (the page body, also published as a Claude artifact) into a standalone index.html for GitHub Pages."""
+"""Build app.html (page body, also published as a Claude artifact) from src/, then wrap it into a standalone index.html for GitHub Pages."""
 import pathlib
 root = pathlib.Path(__file__).parent
+js = "\n".join(p.read_text(encoding="utf-8") for p in sorted((root / "src/js").glob("*.js")))
+app = (root / "src/head.html").read_text(encoding="utf-8") + "<script>\n(() => {\n'use strict';\n" + js + "\n})();\n</script>\n"
+(root / "app.html").write_text(app, encoding="utf-8")
 HEAD = """<!doctype html>
 <html lang="zh">
 <head>
@@ -16,5 +19,5 @@ img{max-width:100%}
 </head>
 <body>
 """
-(root / "index.html").write_text(HEAD + (root / "app.html").read_text(encoding="utf-8") + "\n</body>\n</html>\n", encoding="utf-8")
-print("index.html written")
+(root / "index.html").write_text(HEAD + app + "\n</body>\n</html>\n", encoding="utf-8")
+print("app.html + index.html written,", len(app) // 1024, "KB")
