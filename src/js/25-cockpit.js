@@ -37,6 +37,7 @@ function drawCluster(dt){
     for(let v=0;v<=max;v+=step){const a=(135+270*v/max)*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a);c.strokeStyle=red!=null&&v>=red?'#e3414a':'#dfe5ec';c.lineWidth=2.5;c.beginPath();c.moveTo(cx+ca*(r-4),cy+sa*(r-4));c.lineTo(cx+ca*(r-14),cy+sa*(r-14));c.stroke();c.fillStyle='#dfe5ec';c.font='600 16px "Barlow Condensed",Arial';c.fillText(v,cx+ca*(r-27),cy+sa*(r-27));}
     const a=(135+270*Math.min(val,max)/max)*Math.PI/180;c.strokeStyle='#ff5a3c';c.lineWidth=4;c.beginPath();c.moveTo(cx-Math.cos(a)*10,cy-Math.sin(a)*10);c.lineTo(cx+Math.cos(a)*(r-16),cy+Math.sin(a)*(r-16));c.stroke();c.fillStyle='#222a35';c.beginPath();c.arc(cx,cy,9,0,7);c.fill();
     c.fillStyle='#8f9bab';c.font='500 12px Arial';c.fillText(label,cx,cy+r*0.58);};
+  if(car.gear==='D'){c.fillStyle='#1fe0a0';c.font='700 15px "Barlow Condensed",Arial';c.fillText(car.gn||1,306,163);}
   dial(112,98,86,180,20,kmh,'km/h');dial(400,98,86,8,1,rpm,'×1000 r/min',6);
   c.fillStyle=kmh>curLimit+2?'#ff5a62':'#f2f5f8';c.font='700 58px "Barlow Condensed",Arial';c.fillText(Math.round(kmh),256,92);c.fillStyle='#8f9bab';c.font='500 13px Arial';c.fillText('km/h',256,126);
   ['P','R','N','D'].forEach((g,k)=>{const on=g===car.gear;c.fillStyle=on?(g==='R'?'#f6b40e':'#1fe0a0'):'#4a5563';c.font=(on?'700 22px':'600 17px')+' "Barlow Condensed",Arial';c.fillText(g,223+k*22,160);});

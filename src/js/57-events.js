@@ -79,7 +79,7 @@ function updateEvents(dt){
     if(m.s>MAINP.len-6){m.on=false;m.veh.G.visible=false;}}
   // --- emergency vehicle coming up from behind on 中央通り
   if(!emerg.on){const sA2=MAINP.cum[2],trig=mode==='course'?(ms>sA2+24&&ms<sA2+44):(time>emerg.cool&&ms>120&&ms<MAINP.len-260);
-    if(drv&&onMain&&trig&&car.v>3&&!moto.on){const kind=['ambulance','police','fire'][emerg.n%3];emerg={on:true,veh:emVeh[kind],kind,s:Math.max(2,ms-88),v:15,u:1.75,ut:1.75,block:0,flag:false,n:emerg.n+1,until:0,sirT:0,nodes:MAINP.nodes};
+    if(drv&&onMain&&trig&&car.v>3&&!moto.on){const kind=['ambulance','police','fire'][emerg.n%3];emerg={on:true,t0:time,veh:emVeh[kind],kind,s:Math.max(2,ms-88),v:15,u:1.75,ut:1.75,block:0,flag:false,n:emerg.n+1,until:0,sirT:0,nodes:MAINP.nodes};
       emerg.near=n=>{const k=MAINP.ed.indexOf(n.e);if(k<0)return false;const r=MAINP.cum[k]+n.s-emerg.s;return r>-6&&r<95;};emerg.veh.G.visible=true;}}
   else{const em=emerg,rel=(ms==null?-999:ms)-em.s;let vt=16.5;
     if(onMain&&rel>0&&rel<45&&Math.abs(car.u-em.u)<2.1){vt=Math.min(vt,Math.max(Math.abs(car.v),Math.sqrt(6*Math.max(0,rel-9))));if(rel<18){em.block+=dt;if(em.block>3.5){em.ut=-1.75;if(!em.flag){em.flag=true;violate('emerg');}}}}

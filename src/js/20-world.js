@@ -59,7 +59,7 @@ function buildWorld(){
     const m=P(0xffffff,{map:t,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});WET.push(m);return m;};
   const Y='#f2c230',RM={main:tex(14,[[0.15,'s'],[3.5,'d'],[6.82,'s',Y],[7.18,'s',Y],[10.5,'d'],[13.85,'s']],true),city:tex(7,[[0.15,'s'],[3.5,'d'],[6.85,'s']]),hill:tex(6,[[0.15,'s'],[3,'d'],[5.85,'s']]),rural:tex(6.4,[[0.15,'s'],[3.2,'d'],[6.25,'s']]),
     coast:tex(7,[[0.15,'s'],[3.5,'s',Y],[6.85,'s']]),coast3:tex(10.5,[[0.15,'s'],[3.5,'d'],[7,'s',Y],[10.35,'s']]),bay:tex(6,[]),mount:tex(6.2,[[0.15,'s'],[3.1,'s',Y],[6.05,'s']]),narrow1:tex(4.6,[[0.12,'s'],[4.48,'s']]),lane:tex(5,[]),tram:tex(12,[[0.15,'s'],[3.5,'s',Y],[8.5,'s',Y],[11.85,'s'],[3.98,'s','#8d9399'],[5.42,'s','#8d9399'],[6.58,'s','#8d9399'],[8.02,'s','#8d9399']],false,true),hw:tex(7,[[0.15,'s'],[3.5,'d'],[6.85,'s']]),ramp:tex(4,[[0.15,'s'],[3.85,'s']]),extra:tex(3.8,[[0.15,'s'],[3.7,'t']])};
-  const padTex=cv(128,128,(c,w,h)=>asphaltFill(c,w,h,R));padTex.wrapS=padTex.wrapT=THREE.RepeatWrapping;padTex.repeat.set(4,4);
+  const padTex=cv(128,128,(c,w,h)=>asphaltFill(c,w,h,R));padTex.wrapS=padTex.wrapT=THREE.RepeatWrapping;padTex.repeat.set(1,1);
   const baseMat=P(0xffffff,{map:padTex,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});WET.push(baseMat);
   const pave=cv(128,128,(c)=>{c.fillStyle='#b9bcbf';c.fillRect(0,0,128,128);for(let q=0;q<500;q++){c.fillStyle='rgba(0,0,0,'+(R()*0.06)+')';c.fillRect(R()*128,R()*128,3,3);}c.strokeStyle='rgba(70,75,80,0.55)';c.lineWidth=2;for(let q=0;q<=128;q+=64){c.beginPath();c.moveTo(q,0);c.lineTo(q,128);c.moveTo(0,q);c.lineTo(128,q);c.stroke();}});
   pave.wrapS=pave.wrapT=THREE.RepeatWrapping;pave.repeat.set(1,5);const walkMat=P(0xffffff,{map:pave}),railing=L(0xd9dde1,{side:THREE.DoubleSide}),conc=L(0xb4b6b3);
@@ -67,7 +67,7 @@ function buildWorld(){
   for(const e of ED){strip(e,0,e.n-1,e.w,-e.w,0.07,RM[e.kind]);
     for(const sd of[1,-1]){const arr=sd>0?e.wl:e.wr;let st=-1;for(let i=0;i<=e.n;i++){const wide=i<e.n&&arr[i]>e.w+0.3;if(wide&&st<0)st=i;if(!wide&&st>=0){const a=Math.max(0,st-1),b=Math.min(e.n-1,i);
           if(sd>0)strip(e,a,b,k=>e.wl[k],e.w,0.07,e.kind==='hw'?RM.extra:RM.bay);else strip(e,a,b,-e.w,k=>-e.wr[k],0.07,RM.bay);st=-1;}}}
-    if(e.walk){const [i0,i1]=idxR(e,e.a.r+4.6,e.len-e.b.r-4.6);if(i1>i0){strip(e,i0,i1,k=>e.wl[k]+2.7,k=>e.wl[k],0.2,walkMat);strip(e,i0,i1,k=>-e.wr[k],k=>-e.wr[k]-2.7,0.2,walkMat);}}
+    if(e.walk){const [i0,i1]=idxR(e,e.a.r?e.a.r+3.5:0,e.len-(e.b.r?e.b.r+3.5:0));if(i1>i0){strip(e,i0,i1,k=>e.wl[k]+2.7,k=>e.wl[k],0.2,walkMat);strip(e,i0,i1,k=>-e.wr[k],k=>-e.wr[k]-2.7,0.2,walkMat);}}
     if(e.kind==='mount'||e.kind==='coast'||e.kind==='coast3'){const [i0,i1]=idxR(e,e.a.r?e.a.r+9:0,e.len-(e.b.r?e.b.r+9:0));if(i1>i0){wall(e,i0,i1,k=>e.wl[k]+0.5,0.35,0.8,railing);wall(e,i0,i1,k=>-e.wr[k]-0.5,0.35,0.8,railing);}}}
   // flyover: parapets, the underside of the deck, piers and abutments
   for(const e of ED){if(!e.bump)continue;let i0=-1,i1=-1,j0=-1,j1=-1;for(let i=0;i<e.n;i++){if(e.bh[i]>0.5){if(i0<0)i0=i;i1=i;}if(e.elev[i]){if(j0<0)j0=i;j1=i;}}const W2=e.w+3.0,cm=L(0xa9aaa6,{side:THREE.DoubleSide});
@@ -76,7 +76,8 @@ function buildWorld(){
     for(const [i,full] of[[ab,true],[pier,false]]){const q=edgePos(e,e.ps[i],0),gy=groundY(q.x,q.z),h=e.py[i]-0.75-gy,G=new THREE.Group();G.position.set(q.x,gy,q.z);G.rotation.y=yawOf(q.tx,q.tz);scene.add(G);box(cm,full?2*W2:2*W2-3,h,full?2.2:1.3,0,h/2,0,G);}}
   {const hl=cv(256,256,c=>{c.beginPath();c.arc(128,128,108,0,7);c.fillStyle='#fff';c.fill();c.lineWidth=28;c.strokeStyle='#d4222b';c.stroke();c.fillStyle='#1c4c9c';c.font='700 78px "Barlow Condensed",Arial,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('3.8m',128,132);for(const d of[1,-1]){c.beginPath();c.moveTo(128,128-d*92);c.lineTo(110,128-d*70);c.lineTo(146,128-d*70);c.closePath();c.fill();}});
     for(const [key,d] of[['O2-N3',1],['N3-N4',-1]]){const e=EK[key],q=edgePos(e,d>0?e.len-38:38,d*(e.w+1.0));signPost(hl,0.9,0.9,q.x,q.y,q.z,q.tx*d,q.tz*d,2.3,backRound);}}
-  for(const k in ND){const n=ND[k];if(!n.r)continue;const m=new THREE.Mesh(new THREE.CircleGeometry(n.r+4.4,36),baseMat);m.rotation.x=-Math.PI/2;m.position.set(n.x,n.y+0.085,n.z);scene.add(m);}
+  for(const k in ND){const n=ND[k];if(!n.poly)continue;const sh=new THREE.Shape();n.poly.forEach((p,q)=>q?sh.lineTo(p[0]-n.x,-(p[1]-n.z)):sh.moveTo(p[0]-n.x,-(p[1]-n.z)));const g=new THREE.ShapeGeometry(sh);g.rotateX(-Math.PI/2);
+    const uv=g.attributes.uv;for(let q=0;q<uv.count;q++)uv.setXY(q,uv.getX(q)/6,uv.getY(q)/6);const m=new THREE.Mesh(g,baseMat);m.position.set(n.x,n.y+0.085,n.z);scene.add(m);}
   // --- markings, signals, signs
   const white=decalMat({color:0xf0f2f4});
   const zebraT=n=>{const t=cv(64,8,(c)=>{c.fillStyle='#f0f2f4';c.fillRect(0,0,32,8);});t.wrapS=THREE.RepeatWrapping;t.repeat.x=n;return decalMat({map:t});},zebra={};

@@ -138,7 +138,7 @@ function buildExpressway(R){
 
 /* ---------- convenience stores, petrol stations, coin parking ---------- */
 const PROPS=[];                                        // parked cars used as scenery (solid)
-function propCar(x,y,z,yaw,col){const v=makeVehicle(Math.random()<0.25?'van':'car',col);v.G.userData.dyn=false;v.G.position.set(x,y,z);v.G.rotation.y=yaw;PROPS.push(v);STATB.push(x,z,-Math.sin(yaw),-Math.cos(yaw),v.hl,v.wid/2);return v;}
+function propCar(x,y,z,yaw,col){const v=makeVehicle(Math.random()<0.25?'van':'car',col);v.G.userData.dyn=false;if(v.beam)v.beam.visible=false;for(const f of v.flare)f.visible=false;v.G.position.set(x,y,z);v.G.rotation.y=yaw;PROPS.push(v);STATB.push(x,z,-Math.sin(yaw),-Math.cos(yaw),v.hl,v.wid/2);return v;}
 function prefabs(R,claim,free,clear){
   const white=L(0xf2f3f4),glass=L(0x33475a),grey=L(0x8f969d),dark=L(0x2f3338),pad=P(0x45494f),line=decalMat({color:0xf0f2f4});
   const place=(key,f,side,w,d,build)=>{const e=EK[key];if(!e)return;const s=e.len*f,off=sideW(e,s,side)+(e.walk?3.2:1.8)+d/2,q=edgePos(e,s,side*off);if(!free(q.x,q.z,Math.max(w,d)*0.4)||!clear(q.x,q.z,w,d,q.tx,q.tz))return;claim(q.x,q.z,Math.max(w,d)*0.5);FOOT.push([q.x,q.z,w,d,q.tx,q.tz,'shop '+key]);

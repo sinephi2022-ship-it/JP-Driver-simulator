@@ -2,14 +2,14 @@
 const VEH_COL=[0x2d5fa8,0x8a8f96,0x9c2f2f,0x2f6b4f,0x3a3f48,0xc9a227,0x6b7c93,0x7a4a2b,0xe8e8e4,0x1d1f24,0x4a6fa5,0xb9bdc2];
 const wheelGeo=new THREE.CylinderGeometry(0.32,0.32,0.24,12);wheelGeo.rotateZ(Math.PI/2);
 const tyreMat=L(0x16181b),glassMat=L(0x1b2532),greyMat=L(0x8f969d);
-const beamGeo=new THREE.PlaneGeometry(1,1);beamGeo.rotateX(-Math.PI/2);
+const beamGeo=new THREE.PlaneGeometry(1,1);beamGeo.rotateX(-Math.PI/2);const flareGeo=new THREE.PlaneGeometry(1.5,0.9);
 function taper(w,h,l,f,r,side){const g=new THREE.BoxGeometry(w,h,l),p=g.attributes.position;for(let k=0;k<p.count;k++)if(p.getY(k)>0){p.setZ(k,p.getZ(k)<0?p.getZ(k)+f:p.getZ(k)-r);p.setX(k,p.getX(k)*(side||0.86));}g.computeVertexNormals();return g;}
 function put(G,geo,mat,x,y,z){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);G.add(m);return m;}
 function lampBox(G,col,w,h,x,y,z){return put(G,new THREE.BoxGeometry(w,h,0.06),new THREE.MeshBasicMaterial({color:col}),x,y,z).material;}
 function makeVehicle(kind,color){
-  const G=new THREE.Group(),v={G,kind,brake:[],bl:[],br:[],beacon:[]};G.userData.dyn=true;let len=4.3,wid=1.7;
+  const G=new THREE.Group(),v={G,kind,brake:[],bl:[],br:[],beacon:[],head:[],flare:[]};G.userData.dyn=true;let len=4.3,wid=1.7;
   const wheels=(xs,zs,r)=>{for(const x of xs)for(const z of zs){const m=put(G,wheelGeo,tyreMat,x,0.32*(r||1),z);m.scale.set(1,r||1,r||1);}};
-  const lights=(w,yh,yt,zf,zr)=>{for(const sx of[-1,1]){lampBox(G,0xfff6d8,0.3,0.14,sx*(w/2-0.3),yh,zf-0.01);v.brake.push(lampBox(G,0x5a0d0d,0.32,0.14,sx*(w/2-0.32),yt,zr+0.01));
+  const lights=(w,yh,yt,zf,zr)=>{for(const sx of[-1,1]){v.head.push(lampBox(G,0xfff6d8,0.3,0.14,sx*(w/2-0.3),yh,zf-0.01));const fl=put(G,flareGeo,flareMat,sx*(w/2-0.3),yh,zf-0.06);fl.rotation.y=Math.PI;v.flare.push(fl);v.brake.push(lampBox(G,0x5a0d0d,0.32,0.14,sx*(w/2-0.32),yt,zr+0.01));
     (sx<0?v.bl:v.br).push(lampBox(G,0x5a3d08,0.14,0.14,sx*(w/2-0.07),yh,zf-0.012),lampBox(G,0x5a3d08,0.14,0.14,sx*(w/2-0.07),yt,zr+0.012));}};
   const beacon=(y,z,w)=>{v.beacon.push(lampBox(G,0x551010,w/2,0.16,-w/4,y,z),lampBox(G,0x551010,w/2,0.16,w/4,y,z));put(G,new THREE.BoxGeometry(w+0.1,0.06,0.3),greyMat,0,y-0.1,z);};
   const rider=(c)=>{put(G,new THREE.CylinderGeometry(0.2,0.22,0.75,8),L(c),0,1.25,0.1);put(G,new THREE.SphereGeometry(0.17,10,8),L(0x22262c),0,1.78,0.05);};
@@ -35,10 +35,11 @@ function makeVehicle(kind,color){
   else if(kind==='moto'){len=2;wid=0.7;put(G,new THREE.BoxGeometry(0.36,0.5,1.5),L(0x20242a),0,0.68,0);rider(0x2d5fa8);wheels([0],[-0.68,0.68],0.95);
     lampBox(G,0xfff6d8,0.16,0.14,0,0.95,-0.78);v.brake.push(lampBox(G,0x5a0d0d,0.16,0.1,0,0.85,0.78));v.bl.push(lampBox(G,0x5a3d08,0.08,0.08,-0.25,0.85,0.76));v.br.push(lampBox(G,0x5a3d08,0.08,0.08,0.25,0.85,0.76));}
   else if(kind==='bike'){len=1.7;wid=0.6;put(G,new THREE.BoxGeometry(0.07,0.38,1.25),L(0x4a5563),0,0.62,0);rider(0xd4532a);wheels([0],[-0.55,0.55],0.9);}
-  if(kind!=='bike'&&kind!=='tram'){const b=new THREE.Mesh(beamGeo,beamMat);b.position.set(0,0.1,-len/2-5);b.scale.set(kind==='moto'?2.2:4.6,1,10);G.add(b);}
+  if(kind!=='bike'&&kind!=='tram'){const b=v.beam=new THREE.Mesh(beamGeo,beamMat);b.position.set(0,0.1,-len/2-5);b.scale.set(kind==='moto'?2.2:4.6,1,10);G.add(b);}
   v.len=len;v.hl=len/2;v.wid=wid;scene.add(G);return v;
 }
 function vehLights(v,brake,sig,flash){
+  const hd=env.night>0.4||env.tunnel>0.5?0xfffbe6:0xa9a79c;for(const m of v.head)m.color.setHex(hd);
   const tail=env.night>0.5?0x9a1414:0x5a0d0d;for(const m of v.brake)m.color.setHex(brake?0xff2a1a:tail);
   const l=(sig==='L'||sig==='H')&&flash,r=(sig==='R'||sig==='H')&&flash;for(const m of v.bl)m.color.setHex(l?0xffb000:0x5a3d08);for(const m of v.br)m.color.setHex(r?0xffb000:0x5a3d08);
   if(v.beacon.length){const a=Math.floor(time*6)%2;v.beacon[0].color.setHex(a?0xff2020:0x551010);v.beacon[1].color.setHex(a?0x551010:0xff2020);}

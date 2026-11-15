@@ -72,6 +72,8 @@ function updateTraffic(dt){
           n.bez={e:f,dir:nx.dir,s:s2,u:u2,tc:nx.tc,t:0,x0:p0.x,z0:p0.z,y0:p0.y,x2:p2.x,z2:p2.z,y2:p2.y,cx:(p0.x+p0.tx*n.dir*h+p2.x-p2.tx*nx.dir*h)/2,cz:(p0.z+p0.tz*n.dir*h+p2.z-p2.tz*nx.dir*h)/2,len:Math.max(3,Math.hypot(p2.x-p0.x,p2.z-p0.z)*1.08)};n.k=k;n.ut=u2;}}
       else placeNpc(n);}
     if(n.mesh.visible)vehLights(n.veh,n.brake,n.sig,flash);
-    if(active&&along>-3&&along<n.hl+2.6&&lat<n.wid/2+1.0&&n.v>0.3&&Math.abs(car.y-n.y)<3){n.v=0;}                    // never drive into the player
+    if(active&&along>-3&&along<n.hl+2.6&&lat<n.wid/2+1.0&&n.v>0.3&&Math.abs(car.y-n.y)<3){n.v=0;}
+    // nose to nose with the player and nobody moving: back off a few metres so that neither is trapped
+    if(active&&!n.bez&&along>0&&along<n.hl+4.5&&lat<n.wid/2+1.2&&Math.abs(car.v)<0.3&&n.v<0.1&&n.hx*Math.sin(car.a)-n.hz*Math.cos(car.a)<-0.3&&Math.abs(car.y-n.y)<3){n.faceT=(n.faceT||0)+dt;if(n.faceT>2.5&&n.faceT<8){n.s-=n.dir*1.1*dt;n.s=clamp(n.s,1,e.len-1);placeNpc(n);}}else n.faceT=0;                    // never drive into the player
   }
 }

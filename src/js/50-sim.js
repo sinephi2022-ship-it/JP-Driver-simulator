@@ -1,12 +1,18 @@
 /* ---------- simulation ---------- */
-const PL={e:null},PL2={e:null};
+const PL={e:null},PL2={e:null},GR=[0,0.50,0.28,0.187,0.136,0.108,0.090],GA=[0,3.5,2.7,2.05,1.55,1.2,0.95];   // engine speed (×1000 r/min per m/s) and pull in each gear
 function locatePlayer(dt){const nr=nearest(car.x,car.z,PL,1,null,car.y)||nearest(car.x,car.z,PL,1);if(!nr)return;const e=nr.e,i=nr.i,fx=Math.sin(car.a),fz=-Math.cos(car.a),al=fx*nr.tx+fz*nr.tz;
   car.inNode=null;for(const n of[e.a,e.b])if(n.r&&Math.hypot(car.x-n.x,car.z-n.z)<n.r+2)car.inNode=n;
   car.e=e;car.s=nr.s;car.u=nr.u;car.tx=nr.tx;car.tz=nr.tz;car.dir=Math.abs(al)>0.5?Math.sign(al):0;
   const g=(e.py[i+1]-e.py[i])/(e.ps[i+1]-e.ps[i]);car.grade=g;car.slope=g*al;const k=Math.min(1,dt*10);car.y+=(nr.y-car.y)*k;car.pitch+=(Math.atan(g*al)-car.pitch)*k;}
 function drive(dt){
   const g=car.gear,pow=g==='D'||g==='R',gd=g==='R'?-1:1,vm=g==='R'?4:36,grip=env.grip;let v=car.v,a=-9.8*(car.slope||0);
-  if(pow&&inp.gas)a+=gd*2.9*inp.gas*(1-Math.abs(v)/vm)*(grip<0.5?0.7:1);else if(pow&&!inp.brake&&!car.hb&&v*gd<1.4)a+=gd*0.8;
+  // six-speed automatic: engine speed follows road speed in the current gear; shifts up early on a light throttle, kicks down on a heavy one
+  {const sp=Math.abs(v);let gn=car.gn||1,rt;
+    if(g==='D'){if(car.shiftT>0)car.shiftT-=dt;else if(gn<6&&sp*GR[gn]>1.9+inp.gas*3.2){gn++;car.shiftT=0.4;}else if(gn>1&&sp*GR[gn]<0.95+inp.gas*1.3&&sp*GR[gn-1]<5.6){gn--;car.shiftT=0.3;}
+      rt=Math.max(0.8+inp.gas*(sp<3?1.3:0.25),sp*GR[gn]);}
+    else if(g==='R'){gn=1;rt=Math.max(0.8+inp.gas,sp*0.5);}else{gn=1;rt=0.8+inp.gas*3.2;}
+    car.gn=gn;rpm+=(rt-rpm)*Math.min(1,dt*(car.shiftT>0?4:9));}
+  if(pow&&inp.gas)a+=gd*(g==='R'?2.6:GA[car.gn])*inp.gas*(1-Math.abs(v)/(g==='R'?4:46))*(car.shiftT>0?0.45:1)*(grip<0.5?0.7:1);else if(pow&&!inp.brake&&!car.hb&&v*gd<1.4)a+=gd*0.8;
   const res=0.3+0.012*Math.abs(v)+0.0009*v*v+8*inp.brake*grip+(car.hb?6:0),dv=res*dt;v+=a*dt;if(Math.abs(v)>dv)v-=Math.sign(v)*dv;else v=0;if(g==='P')v=0;car.v=v;car.braking=inp.brake>0.05;
   const u=Math.abs(v),maxS=0.6/(1+(u/6)*(u/6))*(grip<0.5?0.8:1),target=clamp(inp.right-inp.left+inp.steerA,-1,1)*maxS,rate=(target===0?2.4:1.3)*dt;
   car.steer+=clamp(target-car.steer,-rate,rate);car.steer=clamp(car.steer,-maxS,maxS);

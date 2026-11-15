@@ -13,6 +13,7 @@ function buildNet(){
     const s=clamp(nr.s,46,e.len-46),side=nr.u>0?1:-1,arr=side>0?e.wl:e.wr;for(let i=0;i<e.n;i++){const d=Math.abs(e.ps[i]-s);if(d<21)arr[i]=Math.max(arr[i],e.w+6.2*(1-sstep(14,21,d)));}
     const q=edgePos(e,s,side*(e.w+3.2));p.bay={e,s,side,x:q.x,z:q.z,y:q.y};}
   for(const k in ND){const n=ND[k];n.r=n.ed.length<=2?0:Math.max(...n.ed.map(e=>e.w))+2.2;n.phase={};
+    if(n.r||n.ed.length===2&&(()=>{const a=away(n,n.ed[0]),b=away(n,n.ed[1]);return a[0]*b[0]+a[1]*b[1]>-0.985||Math.abs(n.ed[0].w-n.ed[1].w)>0.5;})())junctionPoly(n);
     if(n.ctrl==='sig'){const m=n.ed.reduce((a,b)=>b.w>a.w?b:a),ax=away(n,m);for(const e of n.ed){const v=away(n,e);n.phase[e.i]=Math.abs(v[0]*ax[0]+v[1]*ax[1])>0.5?0:1;}}}
 }
 function sampleEdge(e){
@@ -60,7 +61,20 @@ function onRoad(x,z,yHint){const cx=Math.floor(x/CELL),cz=Math.floor(z/CELL);
   for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const l=HASH.get((cx+a)+','+(cz+b));if(!l)continue;for(let q=0;q<l.length;q+=2){const e=ED[l[q]],i=l[q+1];if(yHint!=null&&Math.abs(e.py[i]-yHint)>3.4)continue;
     const x0=e.px[i],z0=e.pz[i],dx=e.px[i+1]-x0,dz=e.pz[i+1]-z0,l2=dx*dx+dz*dz,tr=((x-x0)*dx+(z-z0)*dz)/l2;if(tr<-0.3||tr>1.3)continue;const t=clamp(tr,0,1),m=Math.sqrt(l2),u=((x-x0)*dz-(z-z0)*dx)/m,al=Math.abs(tr-t)*m;
     if(al<0.8&&u<=e.wl[i]-0.75&&u>=-(e.wr[i]-0.75))return true;}}
-  for(const k in ND){const n=ND[k];if(n.r&&Math.abs(x-n.x)<n.r+3.7&&Math.abs(z-n.z)<n.r+3.7&&Math.hypot(x-n.x,z-n.z)<n.r+3.6)return true;}return false;}
+  for(const k in ND){const n=ND[k],P=n.poly;if(!P||Math.abs(x-n.x)>n.br||Math.abs(z-n.z)>n.br||yHint!=null&&Math.abs(n.y-yHint)>3.4)continue;
+    let ins=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])ins=!ins;}if(ins)return true;}return false;}
+// outline of a junction: across each road mouth, then a rounded corner to the next road (points in world x,z, counter-clockwise seen from above)
+function junctionPoly(n){
+  const D=n.r?n.r+3.5:Math.max(...n.ed.map(e=>e.w))+1.6,arms=n.ed.map(e=>{const atA=e.a===n,i=atA?0:e.n-1,s=atA?1:-1,ax=e.tx[i]*s,az=e.tz[i]*s,q=edgePos(e,atA?Math.min(D,e.len/2):e.len-Math.min(D,e.len/2),0);
+    // math frame: X=x, Y=-z; the counter-clockwise side of the arm is the left of a→b when the road leaves the node, the right when it arrives
+    const px=az,pz=-ax,wc=atA?e.wl[Math.min(e.n-1,4)]:e.wr[Math.max(0,e.n-5)],wk=atA?e.wr[Math.min(e.n-1,4)]:e.wl[Math.max(0,e.n-5)],dx=q.x-n.x,dz=q.z-n.z;
+    return{ang:Math.atan2(-az,ax),ax,az,ccw:[n.x+dx+px*wc,n.z+dz+pz*wc],cw:[n.x+dx-px*wk,n.z+dz-pz*wk]};}).sort((a,b)=>a.ang-b.ang),P=[];
+  for(let k=0;k<arms.length;k++){const A=arms[k],B=arms[(k+1)%arms.length],p0=A.ccw,p2=B.cw;P.push(A.cw,A.ccw);
+    const cr=A.ax*B.az-A.az*B.ax;let cx=(p0[0]+p2[0])/2,cz=(p0[1]+p2[1])/2;
+    if(Math.abs(cr)>0.25){const t=((p2[0]-p0[0])*B.az-(p2[1]-p0[1])*B.ax)/cr,ix=p0[0]+A.ax*t,iz=p0[1]+A.az*t;if(Math.hypot(ix-n.x,iz-n.z)<D+2){cx=ix;cz=iz;}}
+    else if(arms.length===2){cx=(cx+n.x)/2+(cx-n.x)*0.9;cz=(cz+n.z)/2+(cz-n.z)*0.9;}
+    for(let q=1;q<6;q++){const t=q/6,a=1-t;P.push([a*a*p0[0]+2*a*t*cx+t*t*p2[0],a*a*p0[1]+2*a*t*cz+t*t*p2[1]]);}}
+  n.poly=P;n.br=Math.max(...P.map(p=>Math.max(Math.abs(p[0]-n.x),Math.abs(p[1]-n.z))))+0.5;}
 // shortest route over directed edges (no U-turns): returns [[edge,dir],...] from the far end of (e0,d0) to node `to`
 function findRoute(e0,d0,to){const dist=new Map(),prev=new Map(),key=(e,d)=>e.i*2+(d>0?1:0),open=[[0,e0,d0]];dist.set(key(e0,d0),0);let goal=null;
   while(open.length){let bi=0;for(let q=1;q<open.length;q++)if(open[q][0]<open[bi][0])bi=q;const [c,e,d]=open.splice(bi,1)[0],n=d>0?e.b:e.a;if(c>dist.get(key(e,d)))continue;if(n===to){goal=[e,d];break;}

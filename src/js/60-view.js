@@ -50,7 +50,6 @@ function drawBigMap(){
 let bigK=null;
 let lastTxt={};function setTxt(id,v){if(lastTxt[id]!==v){lastTxt[id]=v;$(id).textContent=v;}}
 function hud(dt){
-  rpm+=((0.8+Math.min(5.2,Math.abs(car.v)*0.17)+inp.gas*0.9)-rpm)*Math.min(1,dt*4);
   const kmh=Math.round(Math.abs(car.v)*3.6);setTxt('spd',kmh);$('spd').classList.toggle('over',kmh>curLimit+2);setTxt('limit',curLimit);setTxt('score',score);$('score').classList.toggle('low',score<70);
   const crit=violations.filter(v=>!v.pts).length;$('crit').hidden=!crit;if(crit)setTxt('crit',T('critChip')(crit));
   if(blink){blinkT+=dt;if(blinkT>0.38){blinkT=0;blinkOn=!blinkOn;beep(blinkOn?1500:1150,0.025,0.03);}}else{blinkOn=false;blinkT=0.38;}

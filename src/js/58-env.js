@@ -3,7 +3,7 @@ const env={sight:1,npcCap:1,npcDec:2.2,headway:0,mode:'day',weather:'clear',tod:
 const WET=[],GLOW=[];                                    // additive light pools that fade in at night
 const glowTex=cv(64,64,c=>{const g=c.createRadialGradient(32,32,2,32,32,31);g.addColorStop(0,'rgba(255,236,190,0.9)');g.addColorStop(0.5,'rgba(255,225,170,0.3)');g.addColorStop(1,'rgba(255,220,160,0)');c.fillStyle=g;c.fillRect(0,0,64,64);});
 const glowMat=o=>{const m=new THREE.MeshBasicMaterial(Object.assign({map:glowTex,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4},o));GLOW.push(m);return m;};
-const beamMat=glowMat({}),aviMat=new THREE.MeshBasicMaterial({color:0x330808});let dome,rainLines,snowPts,headLamp,wiperPiv=[],rainOff,snowOff;
+const beamMat=glowMat({}),flareMat=glowMat({});flareMat.userData.k=1;beamMat.userData.k=0.7;const aviMat=new THREE.MeshBasicMaterial({color:0x330808});let dome,rainLines,snowPts,headLamp,wiperPiv=[],rainOff,snowOff;
 const cA=new THREE.Color(),cB=new THREE.Color();
 function buildEnv(){
   dome=new THREE.Mesh(new THREE.SphereGeometry(395,16,10),new THREE.MeshBasicMaterial({color:0x070b18,side:THREE.BackSide,transparent:true,opacity:0,depthWrite:false,fog:false}));dome.renderOrder=-1;dome.frustumCulled=false;dome.userData.dyn=true;scene.add(dome);
@@ -46,7 +46,22 @@ function updateEnv(dt){
     p[k]=cx+snowOff[k];p[k+1]=hide?-50:cy-2+snowOff[k+1];p[k+2]=cz+snowOff[k+2];}snowPts.geometry.attributes.position.needsUpdate=true;}
   const wa=1.5-(env.wipers?(Math.sin(time*3.6)+1)*0.66:0);for(const q of wiperPiv)q.rotation.z+=clamp(wa-q.rotation.z,-dt*6,dt*6);
   // tunnel entry / exit: the eyes need a moment to adapt; rain on the glass without wipers blurs the view
-  env.flash=Math.max(0,env.flash-dt*0.5);const gl=$('glare'),haze=w!=='clear'&&!env.wipers&&show&&camMode===0&&state!=='menu'?0.3:0;
+  env.flash=Math.max(0,env.flash-dt*0.5);const gl=$('glare'),haze=0;updateGlass(dt,w,show);
   if(env.flash>0.01){gl.style.background=env.flashCol;gl.style.opacity=env.flash.toFixed(2);}else{gl.style.background='#c9d3dc';gl.style.opacity=haze;}
   const need=n>0.6||env.inTunnel;if(drv&&need&&!env.lights&&Math.abs(car.v)>2){env.nolT+=dt;if(env.nolT>4&&!env.nolFlag){env.nolFlag=true;violate('nolight');}}else{env.nolT=0;if(env.lights||!need)env.nolFlag=false;}
+}
+
+/* ---------- rain and snow collecting on the windscreen; the wipers sweep it away ---------- */
+const drops=[];let glassCtx=null,glassT=0;
+function updateGlass(dt,w,show){
+  const cvs=$('glass'),on=w!=='clear'&&show&&camMode===0&&state!=='menu'&&state!=='result';if(!on&&!drops.length){if(glassT){glassCtx.clearRect(0,0,cvs.width,cvs.height);glassT=0;}return;}
+  const W=Math.max(2,app.clientWidth>>1),H=Math.max(2,app.clientHeight>>1);if(cvs.width!==W||cvs.height!==H){cvs.width=W;cvs.height=H;}glassCtx=glassCtx||cvs.getContext('2d');glassT=1;const c=glassCtx,snow=w==='snow',top=H*0.68;
+  if(on&&state==='drive'){const rate=(snow?16:30)+Math.abs(car.v)*(snow?0.5:1.2);for(let k=rate*dt+Math.random()|0;k>0&&drops.length<190;k--)drops.push({x:Math.random()*W,y:Math.random()*top,r:snow?2+Math.random()*3.2:1.2+Math.random()*2.6,a:0,vy:snow?2+Math.random()*4:4+Math.random()*16});}
+  // the wiper blades sweep across; anything in their path is cleared
+  const wipe=env.wipers&&state==='drive',xw=W*(0.06+0.88*(Math.sin(time*3.6)+1)/2);
+  for(let i=drops.length-1;i>=0;i--){const d=drops[i];d.a+=dt;d.y+=d.vy*dt*(d.r>3&&!snow?1.6:1);if(d.y>top||d.a>(snow?26:16)||!on||wipe&&Math.abs(d.x-xw)<W*0.075)drops.splice(i,1);}
+  c.clearRect(0,0,W,H);if(!on)return;
+  if(!env.wipers){c.fillStyle=snow?'rgba(235,240,245,'+Math.min(0.34,drops.length/420)+')':'rgba(190,205,218,'+Math.min(0.22,drops.length/700)+')';c.fillRect(0,0,W,top+6);}
+  for(const d of drops){if(snow){c.fillStyle='rgba(250,252,255,0.82)';c.beginPath();c.arc(d.x,d.y,d.r,0,6.3);c.fill();}
+    else{c.fillStyle='rgba(205,222,236,0.30)';c.beginPath();c.ellipse(d.x,d.y,d.r,d.r*1.25,0,0,6.3);c.fill();c.fillStyle='rgba(255,255,255,0.55)';c.fillRect(d.x-d.r*0.4,d.y-d.r*0.6,Math.max(1,d.r*0.4),Math.max(1,d.r*0.4));}}
 }

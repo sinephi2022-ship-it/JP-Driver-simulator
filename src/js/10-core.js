@@ -48,7 +48,10 @@ const PLACES=[                                         // destinations: name, no
   ['若葉港','S5',1068,-16],['海水浴場','C1',1085,-505],['岬の灯台','C3',1104,-1012],['青葉峠 展望台','C4',968,-1302],['高速 若葉IC','IC0',600,-812],['道の駅 山手','V2',832,-2782],['山手町役場','V1',440,-2735],['山手温泉','V4',352,-3002],['棚田','V5',705,-3055]];
 const COURSE=['S1','S2','A2','A3','A4','N4','N2'];  // 検定コース: waypoints, the goal bay is after the last one
 let nav=null;
-function sigState(n,e){if(emerg.on&&emerg.nodes.has(n)){return e.kind==='main'?'g':'r';}const t=(time+n.off)%32,ph=n.phase[e.i];return ph===0?(t<12?'g':t<15?'y':'r'):(t<16?'r':t<28?'g':t<31?'y':'r');}
+function sigState(n,e){const t=(time+n.off)%32,ph=n.phase[e.i],norm=ph===0?(t<12?'g':t<15?'y':'r'):(t<16?'r':t<28?'g':t<31?'y':'r');
+  // an emergency vehicle on 中央通り gets a green wave; lights never jump straight to red: three seconds of yellow first
+  if(emerg.nodes&&emerg.nodes.has(n)){const main=e.kind==='main';if(emerg.on)return main?'g':(time<emerg.t0+3?'y':'r');if(time<emerg.until+3&&main&&norm==='r')return'y';}
+  return norm;}
 
 /* ---------- three setup ---------- */
 const canvas=$('gl'),app=$('app');
