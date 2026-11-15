@@ -26,7 +26,7 @@ function autopilot(dt){
   if(n.r>0&&trk&&trk.next&&trk.next!=='G'&&D<n.r+25)apPlan={n,f:trk.next,tc:trk.act};
   if(n.r>0&&trk){const g=D-FRONT-(n.r+2.4),st=n.ctrl==='sig'?sigState(n,e):null,must=n.ctrl==='stop'&&n.stops.includes(e.key)&&!trk.stopped;
     if(trk.act==='L'||trk.act==='R'){if(g<50&&g>-2)blink=trk.act;if(g<14)vt=Math.min(vt,4.5);}
-    if(g>-0.3&&g<40&&((st&&st!=='g'&&!(st==='y'&&g<4))||must)){vt=Math.min(vt,g<1.2?0:Math.sqrt(2*2.2*(g-1)));if(g<1.2)brake=true;}}
+    if(g>-0.3&&g<40&&((st&&st!=='g'&&!(st==='y'&&g<Math.max(4,v*v/9)))||must)){vt=Math.min(vt,g<1.2?0:Math.sqrt(2*2.2*(g-1)));if(g<1.2)brake=true;}}
   for(const f of e.feat){const rel=(f.s-car.s)*dir;if(f.t==='rail'){const q=ft[e.i+f.t+f.s+dir],g=rel-FRONT-4.5;if(g>-0.3&&g<30&&(rail.alarm||!(q&&q.stopped))){vt=Math.min(vt,g<1.2?0:Math.sqrt(4.4*(g-1)));if(g<1.2)brake=true;}}
     if(f.t==='xwalk'&&ped.state!=='away'){const g=rel-FRONT-3.5;if(g>-0.3&&g<30){vt=Math.min(vt,g<1.2?0:Math.sqrt(4.4*(g-1)));if(g<1.2)brake=true;}}
     if(f.t==='toll'&&rel>-2&&rel<40)vt=Math.min(vt,5);}

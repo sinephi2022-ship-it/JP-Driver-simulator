@@ -76,7 +76,7 @@ $('menuBtn').onclick=()=>{resetGame();state='menu';$('result').hidden=true;$('st
 ['langZh','langJa'].forEach(id=>$(id).addEventListener('change',e=>{lang=e.target.value;try{localStorage.setItem('rojo-lang',lang);}catch(_){}applyLang();}));
 try{const s=localStorage.getItem('rojo-lang');if(s==='ja'){lang='ja';$('langJa').checked=true;}}catch(_){}
 
-window.__sim={rpm:()=>rpm,meshY,FOOT,onRoad,nearest,PLACES,speed(n){simN=n;},auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
+window.__sim={sig:(n,k)=>sigState(ND[n],EK[k]),get time(){return time},rpm:()=>rpm,meshY,FOOT,onRoad,nearest,PLACES,speed(n){simN=n;},auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
 /* ---------- boot ---------- */
 let booted=false;
 function boot(){if(booted)return;booted=true;buildWorld();resetGame();applyLang();resize();requestAnimationFrame(frame);}

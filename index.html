@@ -1373,7 +1373,7 @@ function updateEvents(dt){
   if(!emerg.on){const sA2=MAINP.cum[2],trig=mode==='course'?(ms>sA2+24&&ms<sA2+44):(time>emerg.cool&&ms>120&&ms<MAINP.len-260);
     if(drv&&onMain&&trig&&car.v>3&&!moto.on){const kind=['ambulance','police','fire'][emerg.n%3];emerg={on:true,t0:time,veh:emVeh[kind],kind,s:Math.max(2,ms-88),v:15,u:1.75,ut:1.75,block:0,flag:false,n:emerg.n+1,until:0,sirT:0,nodes:MAINP.nodes};
       emerg.near=n=>{const k=MAINP.ed.indexOf(n.e);if(k<0)return false;const r=MAINP.cum[k]+n.s-emerg.s;return r>-6&&r<95;};emerg.veh.G.visible=true;}}
-  else{const em=emerg,rel=(ms==null?-999:ms)-em.s;let vt=16.5;
+  else{const em=emerg;if(ms!=null)em.pm=ms;const rel=(em.pm!=null?em.pm:-999)-em.s;let vt=16.5;   // inside a junction the car may briefly count as being on a side street: keep its last place on the avenue
     if(onMain&&rel>0&&rel<45&&Math.abs(car.u-em.u)<2.1){vt=Math.min(vt,Math.max(Math.abs(car.v),Math.sqrt(6*Math.max(0,rel-9))));if(rel<18){em.block+=dt;if(em.block>3.5){em.ut=-1.75;if(!em.flag){em.flag=true;violate('emerg');}}}}
     em.u+=clamp(em.ut-em.u,-2*dt,2*dt);em.v+=clamp(vt-em.v,-8*dt,3*dt);em.s+=em.v*dt;const q=pathPos(MAINP,em.s,em.u);em.x=q.x;em.z=q.z;em.hx=q.tx;em.hz=q.tz;em.veh.G.position.set(q.x,q.y,q.z);em.veh.G.rotation.y=yawOf(q.tx,q.tz);vehLights(em.veh,vt<em.v-0.1,null,flash);
     const dist=Math.hypot(car.x-q.x,car.z-q.z);if(drv&&onMain&&rel>-10&&rel<110)evHint='hEmerg';
@@ -1638,7 +1638,7 @@ $('menuBtn').onclick=()=>{resetGame();state='menu';$('result').hidden=true;$('st
 ['langZh','langJa'].forEach(id=>$(id).addEventListener('change',e=>{lang=e.target.value;try{localStorage.setItem('rojo-lang',lang);}catch(_){}applyLang();}));
 try{const s=localStorage.getItem('rojo-lang');if(s==='ja'){lang='ja';$('langJa').checked=true;}}catch(_){}
 
-window.__sim={rpm:()=>rpm,meshY,FOOT,onRoad,nearest,PLACES,speed(n){simN=n;},auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
+window.__sim={sig:(n,k)=>sigState(ND[n],EK[k]),get time(){return time},rpm:()=>rpm,meshY,FOOT,onRoad,nearest,PLACES,speed(n){simN=n;},auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
 /* ---------- boot ---------- */
 let booted=false;
 function boot(){if(booted)return;booted=true;buildWorld();resetGame();applyLang();resize();requestAnimationFrame(frame);}
@@ -1673,7 +1673,7 @@ function autopilot(dt){
   if(n.r>0&&trk&&trk.next&&trk.next!=='G'&&D<n.r+25)apPlan={n,f:trk.next,tc:trk.act};
   if(n.r>0&&trk){const g=D-FRONT-(n.r+2.4),st=n.ctrl==='sig'?sigState(n,e):null,must=n.ctrl==='stop'&&n.stops.includes(e.key)&&!trk.stopped;
     if(trk.act==='L'||trk.act==='R'){if(g<50&&g>-2)blink=trk.act;if(g<14)vt=Math.min(vt,4.5);}
-    if(g>-0.3&&g<40&&((st&&st!=='g'&&!(st==='y'&&g<4))||must)){vt=Math.min(vt,g<1.2?0:Math.sqrt(2*2.2*(g-1)));if(g<1.2)brake=true;}}
+    if(g>-0.3&&g<40&&((st&&st!=='g'&&!(st==='y'&&g<Math.max(4,v*v/9)))||must)){vt=Math.min(vt,g<1.2?0:Math.sqrt(2*2.2*(g-1)));if(g<1.2)brake=true;}}
   for(const f of e.feat){const rel=(f.s-car.s)*dir;if(f.t==='rail'){const q=ft[e.i+f.t+f.s+dir],g=rel-FRONT-4.5;if(g>-0.3&&g<30&&(rail.alarm||!(q&&q.stopped))){vt=Math.min(vt,g<1.2?0:Math.sqrt(4.4*(g-1)));if(g<1.2)brake=true;}}
     if(f.t==='xwalk'&&ped.state!=='away'){const g=rel-FRONT-3.5;if(g>-0.3&&g<30){vt=Math.min(vt,g<1.2?0:Math.sqrt(4.4*(g-1)));if(g<1.2)brake=true;}}
     if(f.t==='toll'&&rel>-2&&rel<40)vt=Math.min(vt,5);}
