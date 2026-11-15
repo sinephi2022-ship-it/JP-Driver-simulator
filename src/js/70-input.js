@@ -43,9 +43,8 @@ stalkCtl('stkR',()=>toggleLights(),d=>toggleBlink(d<0?'L':'R'));stalkCtl('stkL',
 openMap=function(){if(state!=='drive')return;state='map';for(const k in inp)inp[k]=0;$('mapTip').textContent=T(mode==='free'?'mapTitle':'mapRO');$('navClear').hidden=!nav;drawBigMap();$('bigmap').hidden=false;};
 closeMap=function(){if(state==='map'){state='drive';$('bigmap').hidden=true;}};
 $('map').addEventListener('click',openMap);$('mapBtn').onclick=openMap;$('mapClose').onclick=closeMap;$('navClear').onclick=()=>{clearNav();closeMap();};
-$('bigC').addEventListener('click',e=>{if(mode!=='free'||!bigK)return;const c=$('bigC'),r=c.getBoundingClientRect(),wx=(e.clientX-r.left)/r.width*c.width/bigK.k+bigK.x0,wz=(e.clientY-r.top)/r.height*c.height/bigK.k+bigK.z0;
-  if(Math.hypot(wx-X0,wz+128)<42){setNav(3,0,0,'高速 若葉IC');closeMap();return;}
-  let best=null,bd=48;for(const q in nodes){const n=nodes[q],d=Math.hypot(wx-n.i*S,wz-n.j*S);if(d<bd){bd=d;best=n;}}if(best){setNav(best.i,best.j,null,best.name);closeMap();}});
+$('bigC').addEventListener('click',e=>{if(mode!=='free'||!bigK)return;const c=$('bigC'),r=c.getBoundingClientRect(),wx=((e.clientX-r.left)/r.width*c.width-bigK.ox)/bigK.k+bigK.x0,wz=(e.clientY-r.top)/r.height*c.height/bigK.k+bigK.z0;
+  let best=null,bd=110;for(const p of PLACES){const d=Math.hypot(wx-p[2],wz-p[3]);if(d<bd){bd=d;best=p;}}if(best){setNav(best[1],best[0]);closeMap();}});
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{$({course:'modeCourse',free:'modeFree',hw:'modeHw'}[b.dataset.mode]).checked=true;$('pause').hidden=true;begin();});
 // gear: hold the button and slide up / down
 {const gb=$('gearBtn'),strip=$('gearStrip');let gid=null,gy=0;
@@ -72,7 +71,7 @@ $('menuBtn').onclick=()=>{resetGame();state='menu';$('result').hidden=true;$('st
 ['langZh','langJa'].forEach(id=>$(id).addEventListener('change',e=>{lang=e.target.value;try{localStorage.setItem('rojo-lang',lang);}catch(_){}applyLang();}));
 try{const s=localStorage.getItem('rojo-lang');if(s==='ja'){lang='ja';$('langJa').checked=true;}}catch(_){}
 
-window.__sim={env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},get hws(){return hws},tp(x,z,a,v){car.x=x;car.z=z;car.a=a;car.v=v||0;car.gear='D';car.hb=false;},get state(){return state},sig:(i,j,ax)=>sigState(nodes[i+','+j],ax),get car(){return car},get v(){return violations},get cp(){return cp},get ped(){return ped},get rail(){return rail}};
+window.__sim={auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
 /* ---------- boot ---------- */
 let booted=false;
 function boot(){if(booted)return;booted=true;buildWorld();resetGame();applyLang();resize();requestAnimationFrame(frame);}

@@ -1,76 +1,74 @@
-/* ---------- traffic ---------- */
-const CLOSED=new Set(['h,0,-1']);                      // 桜通り westbound is blocked by the broken-down car: no through traffic
-function endsFor(axis,idx,dir){const max=(axis==='h'?MAXX:MAXZ)+E+50,lo=(axis==='v'&&idx===3)?-100:-E-50;return dir>0?[lo,max]:[max,lo];}
-function placeNpc(n){const l=leftOf(n.d);n.x=n.axis==='h'?n.s:n.line+l[0]*n.lane;n.z=n.axis==='h'?n.line+l[1]*n.lane:n.s;n.hx=DV[n.d][0];n.hz=DV[n.d][1];n.mesh.position.set(n.x,0,n.z);n.mesh.rotation.y=yawFor(n.d);}
-function addNpc(kind,o){const veh=makeVehicle(kind,o.color!=null?o.color:VEH_COL[npcs.length%VEH_COL.length]);
-  const n=Object.assign({kind,veh,mesh:veh.G,len:veh.len,hl:veh.hl,wid:veh.wid,v:0,grid:true,lane:1.75},o);
-  n.d=n.axis==='h'?(n.dir>0?1:3):(n.dir>0?2:0);if(n.line==null)n.line=n.idx*S;if(!n.ends)n.ends=endsFor(n.axis,n.idx,n.dir);
-  n.init={axis:n.axis,idx:n.idx,dir:n.dir,d:n.d,ends:n.ends,line:n.line,vmax:n.vmax,s:n.s,lane:n.lane};npcs.push(n);resetNpc(n);return n;}
-function resetNpc(n){Object.assign(n,n.init);n.base=n.lane;n.v=n.grid?0:n.vmax;n.cleared=null;n.wait=0;n.turn=null;n.plan=null;n.sig=null;n.brake=false;n.stops=0;n.dwell=0;n.sigT=0;n.ovT=0;placeNpc(n);}
+/* ---------- traffic on the road network ---------- */
+// lateral offset (in the a→b frame) of lane k for travel direction dir
+function laneU(e,dir,k){const inner=e.inner||0,lw=(e.w-inner)/e.lanes;return e.oneway?e.w-(k+0.5)*lw*2:dir*(inner+(k+0.5)*lw);}
+function placeNpc(n){const q=edgePos(n.e,n.s,n.u);n.x=q.x;n.z=q.z;n.y=q.y;n.hx=q.tx*n.dir;n.hz=q.tz*n.dir;n.mesh.position.set(q.x,q.y,q.z);n.mesh.rotation.y=yawOf(n.hx,n.hz);}
+function addNpc(kind,o){const veh=makeVehicle(kind,o.color!=null?o.color:VEH_COL[npcs.length%VEH_COL.length]);veh.G.rotation.order='YXZ';
+  const n=Object.assign({kind,veh,mesh:veh.G,len:veh.len,hl:veh.hl,wid:veh.wid,v:0,k:0},o);n.init={e:n.e,dir:n.dir,s:n.s,k:n.k};npcs.push(n);resetNpc(n);return n;}
+function resetNpc(n){Object.assign(n,n.init);n.u=n.ut=laneU(n.e,n.dir,n.k);n.v=n.e.kind==='hw'?(n.vmaxF||20)*0.9:0;n.next=null;n.bez=null;n.wait=0;n.cleared=null;n.sig=null;n.brake=false;n.ovT=0;placeNpc(n);}
+const drivable=e=>!e.quiet&&e.kind!=='ramp';
 function spawnTraffic(R){
-  const roads=[];for(let j=0;j<ROWS;j++)roads.push(['h',j]);for(let i=0;i<COLS;i++)roads.push(['v',i]);
-  roads.forEach(([ax,idx],ri)=>{const span=(ax==='h'?MAXX:MAXZ)+2*E+100,main=ax==='h'&&idx===1;for(const dir of[1,-1]){if(CLOSED.has(ax+','+idx+','+dir))continue;
-    (main?[0.08,0.4,0.72]:[0.18,0.68]).forEach((f,q)=>{let s=-E-50+span*((f+ri*0.137+(dir>0?0:0.31))%1);if(ax==='h'&&idx===2&&dir>0&&Math.abs(s+45)<50)s+=130;if(ax==='v'&&idx===3)s=Math.max(s,-60);
-      const kind=(main&&q===1)||(ax==='v'&&idx===0&&q===0)?'truck':R()<0.3?'van':'car';
-      addNpc(kind,{axis:ax,idx,dir,s,vmax:limitOf(ax,idx)/3.6*(kind==='truck'?0.8:0.82+R()*0.14)});});
-    if(main)addNpc('bus',{axis:ax,idx,dir,s:dir>0?-90:MAXX+95,lane:5.25,vmax:10});}});
-  bikeNpc=addNpc('bike',{axis:'h',idx:2,dir:1,s:18,lane:2.85,vmax:4.2});
-  // expressway: northbound 走行車線 / 追越車線, plus the opposite carriageway
-  const N=[HW.portal-2,HW.end],Sd=[HW.end,HW.portal-2];
-  [[-330,25,'car'],[-700,22,'truck'],[-1050,26,'van'],[-1400,24.5,'car'],[-1780,22.5,'truck'],[-2150,26,'car'],[-520,29,'car'],[-1250,30,'car'],[-2380,28,'car']].forEach(q=>addNpc(q[2],{grid:false,axis:'v',idx:3,line:X0,dir:-1,s:q[0],lane:-1.75,vmax:q[1],ends:N}));
-  [[-300,26,14.75,'car'],[-800,23,14.75,'truck'],[-1200,29,11.25,'car'],[-1600,26,14.75,'van'],[-2000,25,14.75,'car'],[-2400,29,11.25,'car']].forEach(q=>addNpc(q[3],{grid:false,opp:true,axis:'v',idx:3,line:X0,dir:1,s:q[0],lane:q[2],vmax:q[1],ends:Sd}));
+  const pool=ED.filter(e=>drivable(e)&&e.kind!=='hw'&&e.len>70&&!e.toll);let c=0;
+  for(const e of pool){const cnt=e.kind==='main'?2:e.kind==='mount'||e.kind==='rural'?(e.len>600?2:1):1;for(const dir of e.oneway?[1]:[1,-1])for(let q=0;q<cnt;q++){if(e.key==='S0-S1'&&dir>0)continue;if(e.closedDir===dir)continue;if(R()<0.28&&e.kind!=='main')continue;
+      const kind=e.kind==='main'&&q===1&&dir>0?'truck':R()<0.28?'van':'car';addNpc(kind,{e,dir,s:e.len*(0.2+0.6*((q+R()*0.6)/cnt)),k:0,vf:kind==='truck'?0.8:0.82+R()*0.14});c++;}}
+  for(const [key,sf] of[['A1-A2',0.5],['A3-A4',0.4]]){const e=EK[key];addNpc('bus',{e,dir:1,s:e.len*sf,k:1,vf:0.7});addNpc('bus',{e,dir:-1,s:e.len*sf,k:1,vf:0.7});}
+  for(const e of ED)if(e.kind==='hw')[[0.12,'car',25],[0.3,'truck',22],[0.46,'van',26],[0.62,'car',24.5],[0.8,'truck',22.5],[0.22,'car',29],[0.7,'car',30]].forEach((q,i)=>addNpc(q[1],{e,dir:1,s:e.len*q[0],k:i>4?1:0,vmaxF:q[2]}));
 }
-function startTurn(n,node){const p=n.plan,d=DV[n.d],l=leftOf(n.d),ed=ext(node,n.axis),el=ext(node,p.nax);
-  n.turn={th:0,cx:node.i*S-d[0]*(ed+2)+l[0]*(el+2),cz:node.j*S-d[1]*(ed+2)+l[1]*(el+2),rl:el+2-n.lane,rd:ed+2-1.75,d,l,yaw0:yawFor(n.d)};}
-// is the lane beside vehicle n free? (lane = lateral offset on the same carriageway; player counts as a vehicle)
-function laneFree(n,lane,back,front){
-  for(const o of npcs)if(o!==n&&!o.grid===!n.grid&&o.axis===n.axis&&o.line===n.line&&o.dir===n.dir&&Math.abs(o.lane-lane)<1.7){const rel=(o.s-n.s)*n.dir;if(rel>-back&&rel<front)return false;}
-  const l=leftOf(n.d),px=n.axis==='h'?n.s:n.line+l[0]*lane,pz=n.axis==='h'?n.line+l[1]*lane:n.s,rx=car.x-px,rz=car.z-pz,al=rx*n.hx+rz*n.hz,lt=Math.abs(rx*n.hz-rz*n.hx);
-  return !(lt<2.6&&al>-back-6&&al<front+4);
-}
+function pickNext(n){const node=n.dir>0?n.e.b:n.e.a,opts=[];
+  for(const f of node.ed){if(f===n.e||!drivable(f)&&!f.toll)continue;const fd=f.a===node?1:-1;if(f.oneway&&fd<0||f.closedDir===fd)continue;const tc=turnClass(node,n.e,f);if(tc==='U')continue;
+    if(n.kind==='bus'&&(f.kind!=='main'||tc!=='S'))continue;if((n.kind==='truck'||n.kind==='bus')&&(f.kind==='narrow1'||f.kind==='hill'))continue;
+    let w=tc==='S'?3:tc==='L'?1.4:(node.ctrl==='sig'&&node.ed.length>3?0:0.8);if(f.kind==='hw'||f.toll)w*=0.5;if(w>0)opts.push([f,fd,tc,w]);}
+  if(!opts.length)return null;let t=Math.random()*opts.reduce((a,b)=>a+b[3],0);for(const o of opts){t-=o[3];if(t<=0)return{e:o[0],dir:o[1],tc:o[2],node};}return{e:opts[0][0],dir:opts[0][1],tc:opts[0][2],node};}
+function respawn(n){for(let q=0;q<20;q++){const e=ED[Math.floor(Math.random()*ED.length)];if(!drivable(e)||e.kind==='hw'||e.toll||e.len<70)continue;const dir=e.oneway?1:(Math.random()<0.5?1:-1);if(e.closedDir===dir)continue;const s=e.len*(0.3+Math.random()*0.4),p=edgePos(e,s,0);if(Math.hypot(p.x-car.x,p.z-car.z)<260)continue;
+    if(npcs.some(o=>o!==n&&o.e===e&&o.dir===dir&&Math.abs(o.s-s)<25))continue;n.e=e;n.dir=dir;n.s=s;n.k=n.kind==='bus'&&e.kind==='main'?1:0;n.u=n.ut=laneU(e,dir,n.k);n.v=0;n.next=null;n.bez=null;n.cleared=null;return;}}
+function laneFree(n,u,back,front){for(const o of npcs)if(o!==n&&o.e===n.e&&!o.bez&&Math.abs(o.u-u)<1.7){const rel=(o.s-n.s)*n.dir;if(rel>-back&&rel<front)return false;}
+  if(car.e===n.e&&Math.abs(car.u-u)<2.2){const rel=(car.s-n.s)*n.dir;if(rel>-back-6&&rel<front+4)return false;}return true;}
 function updateTraffic(dt){
-  ped.npcThreat=false;const flash=Math.floor(time*2.7)%2===0;
-  for(const n of npcs){
-    let g=1e9,cap=n.vmax,latT=n.base,sig=null;
-    if(n.grid&&!n.turn){const cnt=n.axis==='h'?COLS:ROWS;
-      for(let k=0;k<cnt;k++){const node=n.axis==='h'?nodes[k+','+n.idx]:nodes[n.idx+','+k],sl=SLd(node,n.axis),gg=(k*S-n.dir*sl-n.s)*n.dir-n.hl;if(gg<-1)continue;
-        if(node.type==='sig'){const st=sigState(node,n.axis);if(st==='r'||(st==='y'&&gg>n.v*n.v/5))g=Math.min(g,gg);
-          if((n.kind==='car'||n.kind==='van')&&gg<42&&(!n.plan||n.plan.k!==k)){const nd=(n.d+3)%4,nax=n.axis==='h'?'v':'h',nidx=nax==='h'?node.j:node.i,ndir=(nd===1||nd===2)?1:-1;
-            const ok=gg>22&&!(n.axis==='h'&&n.idx===1)&&!CLOSED.has(nax+','+nidx+','+ndir)&&!(nax==='v'&&nidx===3&&ndir<0);n.plan={k,act:ok&&Math.random()<0.32?'L':'S',nd,nax,nidx,ndir};}
-          if(n.plan&&n.plan.k===k&&n.plan.act==='L'){sig='L';if(gg<16)cap=Math.min(cap,4.6);if((n.s-(k*S-n.dir*(ext(node,n.axis)+2)))*n.dir>=0){startTurn(n,node);break;}}}
-        else if(node.type===(n.axis==='h'?'sh':'sv')&&n.cleared!==k){g=Math.min(g,gg);
-          if(n.v<0.15&&gg<1.5){n.wait+=dt;let clear=n.wait>1.2;const cx=node.i*S,cz=node.j*S;
-            if(clear)for(const o of npcs)if(o.grid&&o.axis!==n.axis&&Math.hypot(o.x-cx,o.z-cz)<24){clear=false;break;}
-            if(clear&&Math.hypot(car.x-cx,car.z-cz)<15&&(car.x-n.x)*n.hx+(car.z-n.z)*n.hz>0)clear=false;
-            if(clear){n.cleared=k;n.wait=0;}}}}
-      if(n.axis==='h'&&n.idx===2&&ped.state!=='away'){const gg=(XC-n.dir*3.5-n.s)*n.dir-n.hl;if(gg>-1){g=Math.min(g,gg);if(gg<28&&n.v>0.4)ped.npcThreat=true;}}
-      if(n.axis==='v'&&rail.alarm){const gg=(ZR-n.dir*4.5-n.s)*n.dir-n.hl;if(gg>-1)g=Math.min(g,gg);}
-      if(n.kind==='bus'){const st=BUS_STOPS[n.dir][n.stops];if(st!=null){const gg=(st-n.s)*n.dir-n.hl;if(gg<-1)n.stops++;else{g=Math.min(g,gg);if(gg<32)sig='L';if(n.v<0.1&&gg<1.2){sig='H';n.dwell+=dt;if(n.dwell>5){n.stops++;n.dwell=0;n.sigT=time+3.5;}}}}if(time<n.sigT)sig='R';}
-      if(n.axis==='v'&&n.idx===3&&n.dir<0&&n.s<84&&n.s>52)latT=0.35;                 // steer round the van parked on 小学校通り
-      if(emerg.on&&n.axis==='h'&&n.idx===1&&n.dir===emerg.dir&&n.kind!=='bus'){const rel=(n.s-emerg.s)*n.dir;if(rel>-6&&rel<95)latT=5.25;}
+  ped.npcThreat=false;const flash=Math.floor(time*2.7)%2===0,active=state!=='menu';
+  for(const n of npcs){if(n.parked){vehLights(n.veh,false,n.sig,flash);if(state==='drive'&&invuln<time&&hitVehicle(n.veh,n.x,n.z,n.hx,n.hz)){invuln=time+4;car.v=0;violate('crash');}continue;}
+    const e=n.e,hwy=e.kind==='hw',lim=(n.vmaxF||e.limit/3.6*(n.vf||0.85))*env.npcCap;
+    // far from the player: keep moving cheaply, skip the detailed logic for most frames
+    const pd=Math.abs(n.x-car.x)+Math.abs(n.z-car.z);n.mesh.visible=pd<420;
+    let g=1e9,cap=lim,sig=null;const node=n.dir>0?e.b:e.a,D=n.dir>0?e.len-n.s:n.s;
+    if(!n.bez){
+      if(node.r>0||node.ed.length!==2){if(!n.next&&D<60)n.next=pickNext(n)||{dead:true};
+        const gg=D-(node.r+2.4)-n.hl;
+        if(gg>-1){if(node.ctrl==='sig'){const st=sigState(node,e);if(st==='r'||(st==='y'&&gg>n.v*n.v/5))g=Math.min(g,gg);}
+          else if(node.ctrl==='stop'&&node.stops.includes(e.key)&&n.cleared!==node){g=Math.min(g,gg);if(n.v<0.15&&gg<1.5){n.wait+=dt;let clear=n.wait>1.2;
+              if(clear)for(const o of npcs)if(o!==n&&o.e!==e&&o.v>1&&Math.hypot(o.x-node.x,o.z-node.z)<24){clear=false;break;}
+              if(clear&&car.e!==e&&Math.abs(car.v)>1&&Math.hypot(car.x-node.x,car.z-node.z)<22)clear=false;if(clear){n.cleared=node;n.wait=0;}}}}
+        if(n.next&&!n.next.dead){if(n.next.tc!=='S'){sig=n.next.tc;if(D<node.r+16)cap=Math.min(cap,4.8);}else if(node.r>0&&D<node.r+10)cap=Math.min(cap,9);}
+        else if(n.next&&n.next.dead&&D<30)cap=Math.min(cap,5);}
+      else if(D<1.5){const f=node.ed[0]===e?node.ed[1]:node.ed[0],fd=f.a===node?1:-1;if(f.oneway&&fd<0||!drivable(f)&&!f.toll)n.next={dead:true};else{n.e=f;n.dir=fd;n.s=fd>0?0.01:f.len-0.01;n.k=Math.min(n.k,f.lanes-1);n.u=n.ut=laneU(f,fd,n.k);continue;}}
+      if(tram.dwell>0&&tram.stop===1&&e===tram.e&&n.dir===tram.dir){const rel=(tram.es-n.s)*n.dir-tram.veh.hl-n.hl-2.5;if(rel>-1)g=Math.min(g,rel);}
+      for(const f of e.feat){const rel=(f.s-n.s)*n.dir-n.hl;if(f.t==='rail'&&rail.alarm&&rel-4.5>-1)g=Math.min(g,rel-4.5);if(f.t==='xwalk'&&ped.state!=='away'&&rel-3.5>-1){g=Math.min(g,rel-3.5);if(rel<30&&n.v>0.4)ped.npcThreat=true;}if(f.t==='toll'&&rel>0&&rel<25)cap=Math.min(cap,5.5);}
     }
-    // vehicle ahead in the same lane; pass slower ones where it is allowed
-    let lead=null,gap=1e9;
-    for(const o of npcs)if(o!==n&&!o.grid===!n.grid&&o.axis===n.axis&&o.line===n.line&&o.dir===n.dir&&Math.abs(o.lane-n.lane)<1.6){const q=(o.s-n.s)*n.dir-o.hl-n.hl;if(q>-2&&q<gap){gap=q;lead=o;}}
-    const rx=car.x-n.x,rz=car.z-n.z,along=rx*n.hx+rz*n.hz,lat=Math.abs(rx*n.hz-rz*n.hx);let pl=false;
-    if(along>0&&along<70&&lat<n.wid/2+1.2){const q=along-n.hl-2.3;if(q<gap){gap=q;lead=car;pl=true;}}
-    if(lead===bikeNpc&&n.grid&&n.kind!=='bike'){latT=0.55;if(gap<14&&Math.abs(n.lane-0.55)<0.5){lead=null;gap=1e9;}else cap=Math.min(cap,6);}     // give the cyclist room
-    if(!n.grid&&!n.opp){const inL2=n.base<-3,works=n.s<HW.wA+75&&n.s>HW.wB-15,lv=lead?(pl?Math.abs(car.v):lead.v):99;
-      if(works)latT=n.base=-5.25;
-      else if(!inL2&&n.kind!=='truck'&&lead&&gap<16+n.v*1.1&&lv<n.vmax-2&&n.s<HW.mergeEnd-40&&!(n.s<HW.tunA+60&&n.s>HW.tunB)&&laneFree(n,-5.25,26,45)){n.ovT+=dt;if(n.ovT>0.8){n.base=-5.25;n.ovT=0;}}
-      else if(inL2&&Math.abs(n.lane+5.25)<0.3&&laneFree(n,-1.75,22+n.v*0.5,55)){n.ovT+=dt;if(n.ovT>1.5){n.base=-1.75;n.ovT=0;}}else n.ovT=0;
-      latT=n.base;}
-    if(lead)g=Math.min(g,gap-(n.grid?2.5:4+n.v*0.7));
-    if(Math.abs(latT-n.lane)>0.05){sig=latT>n.lane?'L':'R';n.lane+=clamp(latT-n.lane,-1.3*dt,1.3*dt);}
-    if(n.turn)cap=Math.min(cap,4.6);
-    const vt=g<0.2?0:Math.min(cap,Math.sqrt(2*2.2*g)),heavy=n.kind==='truck'||n.kind==='bus'||n.kind==='fire';
-    n.brake=vt<n.v-0.05||n.v<0.3;n.v=n.v<vt?Math.min(vt,n.v+(heavy?1.1:1.9)*dt):Math.max(vt,n.v-7*dt);n.sig=sig;
-    if(n.turn){const t=n.turn;t.th+=n.v/((t.rl+t.rd)/2)*dt;const c=Math.cos(t.th),s=Math.sin(t.th);
-      n.x=t.cx-t.l[0]*t.rl*c+t.d[0]*t.rd*s;n.z=t.cz-t.l[1]*t.rl*c+t.d[1]*t.rd*s;const tx=t.l[0]*t.rl*s+t.d[0]*t.rd*c,tz=t.l[1]*t.rl*s+t.d[1]*t.rd*c,tm=Math.hypot(tx,tz);n.hx=tx/tm;n.hz=tz/tm;
-      n.mesh.position.set(n.x,0,n.z);n.mesh.rotation.y=t.yaw0+t.th;n.sig='L';
-      if(t.th>=Math.PI/2){const p=n.plan;n.axis=p.nax;n.idx=p.nidx;n.dir=p.ndir;n.d=p.nd;n.line=n.idx*S;n.lane=n.base=1.75;n.ends=endsFor(n.axis,n.idx,n.dir);n.s=n.axis==='h'?n.x:n.z;n.vmax=limitOf(n.axis,n.idx)/3.6*0.88;n.turn=null;n.plan=null;n.cleared=null;placeNpc(n);}}
-    else{n.s+=n.dir*n.v*dt;if((n.s-n.ends[1])*n.dir>0){n.s=n.ends[0];n.cleared=null;n.plan=null;n.stops=0;if(n.grid){n.lane=n.base=n.kind==='bus'?5.25:n.kind==='bike'?2.85:1.75;}else if(!n.opp){n.lane=n.base=n.init.lane;}}placeNpc(n);}
-    vehLights(n.veh,n.brake,n.sig,flash);
-    if(state==='drive'&&invuln<time&&Math.abs(along)<n.hl+1.35&&lat<n.wid/2+0.8){invuln=time+4;car.v=0;violate('crash');}
+    // vehicle ahead: same lane by distance along the road, and anything in the box straight ahead
+    let lead=null,gap=1e9,lv=0;
+    if(pd<520){for(const o of npcs){if(o===n)continue;if(o.e===e&&o.dir===n.dir&&!o.bez&&!n.bez){if(Math.abs(o.u-n.u)<1.6){const q=(o.s-n.s)*n.dir-o.hl-n.hl;if(q>-2&&q<gap){gap=q;lead=o;lv=o.v;}}continue;}
+        const rx=o.x-n.x,rz=o.z-n.z,al=rx*n.hx+rz*n.hz;if(al>0&&al<26*env.sight&&Math.abs(rx*n.hz-rz*n.hx)<1.6&&o.hx*n.hx+o.hz*n.hz>0.2){const q=al-o.hl-n.hl;if(q<gap){gap=q;lead=o;lv=o.v;}}}}
+    const rx=car.x-n.x,rz=car.z-n.z,along=rx*n.hx+rz*n.hz,lat=Math.abs(rx*n.hz-rz*n.hx);
+    if(along>0&&along<(hwy?75:40)*env.sight&&lat<n.wid/2+1.2){const q=along-n.hl-2.3;if(q<gap){gap=q;lead=car;lv=Math.abs(car.v);}}
+    {const b=bikeNpc.n,bx=b.x-n.x,bz=b.z-n.z,al=bx*n.hx+bz*n.hz;if(al>0&&al<26&&Math.abs(bx*n.hz-bz*n.hx)<1.9&&b.hx*n.hx+b.hz*n.hz>0.2){const q=al-b.hl-n.hl;if(q<gap){gap=q;lead=b;lv=b.v;}}}
+    if(lead===bikeNpc.n){n.ut=laneU(e,n.dir,0)-n.dir*1.2;if(gap<14&&Math.abs(n.u-n.ut)<0.5){lead=null;gap=1e9;}else cap=Math.min(cap,6);}
+    else if(hwy&&!n.bez){const works=e===PAinfo.nb&&n.s>PAinfo.works[0]-90&&n.s<PAinfo.works[1]+15,L0=laneU(e,1,0),L1=laneU(e,1,1),inR=n.k===1;
+      if(works){n.k=1;}else if(!inR&&n.kind!=='truck'&&lead&&gap<16+n.v*1.1&&lv<lim-2&&!(n.s>e.tun[0]-60&&n.s<e.tun[1])&&n.s<e.len-300&&laneFree(n,L1,26,45)){n.ovT+=dt;if(n.ovT>0.8){n.k=1;n.ovT=0;}}
+      else if(inR&&Math.abs(n.u-L1)<0.3&&laneFree(n,L0,22+n.v*0.5,55)){n.ovT+=dt;if(n.ovT>1.5){n.k=0;n.ovT=0;}}else n.ovT=0;
+      n.ut=n.k?L1:L0;if(n.s>e.len-260)cap=Math.min(cap,Math.max(8,(e.len-n.s)/9));}
+    else if(!n.bez)n.ut=(emerg.on&&e.kind==='main'&&n.dir===1&&n.kind!=='bus'&&emerg.near(n))?laneU(e,n.dir,1):laneU(e,n.dir,n.k);
+    if(lead)g=Math.min(g,gap-(hwy?4+n.v*0.7:2.5)-n.v*env.headway);
+    if(!n.bez&&Math.abs(n.ut-n.u)>0.05){if(Math.abs(n.ut-n.u)>0.4)sig=(n.ut-n.u)*n.dir>0?'L':'R';n.u+=clamp(n.ut-n.u,-1.3*dt,1.3*dt);}
+    if(n.bez)cap=Math.min(cap,n.bez.tc==='S'?9:4.8);
+    const vt=g<0.2?0:Math.min(cap,Math.sqrt(2*env.npcDec*g)),heavy=n.kind==='truck'||n.kind==='bus';
+    n.brake=vt<n.v-0.05||n.v<0.3;n.v=n.v<vt?Math.min(vt,n.v+(heavy?1.1:1.9)*env.grip*dt):Math.max(vt,n.v-7*env.grip*dt);n.sig=sig;
+    if(n.bez){const b=n.bez;b.t+=n.v*dt/b.len;const t=Math.min(1,b.t),a=1-t;n.x=a*a*b.x0+2*a*t*b.cx+t*t*b.x2;n.z=a*a*b.z0+2*a*t*b.cz+t*t*b.z2;n.y=lerp(b.y0,b.y2,t);
+      const hx=2*a*(b.cx-b.x0)+2*t*(b.x2-b.cx),hz=2*a*(b.cz-b.z0)+2*t*(b.z2-b.cz),m=Math.hypot(hx,hz)||1;n.hx=hx/m;n.hz=hz/m;n.mesh.position.set(n.x,n.y,n.z);n.mesh.rotation.y=yawOf(n.hx,n.hz);n.sig=b.tc==='S'?null:b.tc;
+      if(b.t>=1){n.e=b.e;n.dir=b.dir;n.s=b.s;n.u=b.u;n.bez=null;n.next=null;n.cleared=null;}}
+    else{n.s+=n.dir*n.v*dt;const D2=n.dir>0?e.len-n.s:n.s;
+      if(D2<=Math.max(0.5,node.r)){const nx=n.next;if(!nx||nx.dead){if(D2<1){respawn(n);placeNpc(n);}}
+        else{const f=nx.e,k=n.kind==='bus'?1:hwy&&f.kind!=='hw'?0:Math.min(n.k,f.lanes-1),u2=laneU(f,nx.dir,k),s2=nx.dir>0?node.r+0.5:f.len-node.r-0.5,p0=edgePos(e,n.s,n.u),p2=edgePos(f,s2,u2),h=Math.hypot(p2.x-p0.x,p2.z-p0.z)*0.55;
+          n.bez={e:f,dir:nx.dir,s:s2,u:u2,tc:nx.tc,t:0,x0:p0.x,z0:p0.z,y0:p0.y,x2:p2.x,z2:p2.z,y2:p2.y,cx:(p0.x+p0.tx*n.dir*h+p2.x-p2.tx*nx.dir*h)/2,cz:(p0.z+p0.tz*n.dir*h+p2.z-p2.tz*nx.dir*h)/2,len:Math.max(3,Math.hypot(p2.x-p0.x,p2.z-p0.z)*1.08)};n.k=k;n.ut=u2;}}
+      else placeNpc(n);}
+    if(n.mesh.visible)vehLights(n.veh,n.brake,n.sig,flash);
+    if(active&&state==='drive'&&invuln<time&&Math.abs(along)<n.hl+1.35&&lat<n.wid/2+0.8){invuln=time+4;car.v=0;violate('crash');}
   }
 }

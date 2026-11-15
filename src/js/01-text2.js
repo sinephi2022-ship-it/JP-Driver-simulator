@@ -29,4 +29,14 @@ Object.assign(TX.zh,{mFree:'自由行驶 / 导航',mFreeD:'随意练习；点小
 Object.assign(TX.ja,{mFree:'自由走行 / ナビ',mFreeD:'自由に練習。ミニマップをタップして地図を開き、交差点や高速入口を選ぶとルート案内が始まります。',mapBtn:'地図',mapTitle:'交差点または高速入口をタップして目的地に設定',mapRO:'ナビは「自由走行 / ナビ」モードのみ',navClear:'案内中止',close:'閉じる',navNear:n=>'目的地「'+n+'」はこの先の交差点です',navDone:n=>'「'+n+'」に到着しました',navSet:n=>'目的地を設定：'+n,navIC:'直進して 高速 若葉IC へ',
  kMap:'地図を開く / 目的地設定',kWiper:'ワイパー',stkR:'ライト',stkL:'ワイパー',capR:'左右でハンドル · 上アクセル 下ブレーキ · ダブルタップで視点',modeTo:'モード切替（最初から）',hWiper:'雨・雪：ワイパーを作動（K ／ 左レバー）',
  tHelp:'タッチ操作：右下のパッドは左右でハンドル、上でアクセル、下でブレーキ。ハンドル右のレバーはタップでライト、上下でウインカー。左のレバーでワイパー。左下のシフトボタンを押したまま上下でシフト、その下がサイドブレーキ。ミニマップをタップで地図。画面スワイプで視点移動。横向き推奨。'});
-Object.assign(PTS,{lanesig:5,buslane:10,sidegap:10,hitped:0,makikomi:0,emerg:0,nolight:10,etc:10,minspeed:10,gap:10,passlane:10});
+Object.assign(TX.zh,{iNext:a=>'下一个路口 '+a,iFollow:'沿道路前进',iU:'前面没有路了，请掉头',mCourseD:'从駅西口出发，按指示穿过市区回到桜町，途中有各种事件。减点方式评分，70 分以上合格。',mHwD:'若葉IC → 青葉隧道 → 青葉PA（减速车道与汇入）→ 施工变道 → 山手出口 → 道の駅。',
+ mapTitle:'点一个地点设为目的地，系统会规划路线',hwTunnelAhead:'前方 青葉隧道',hwPA:'前方 青葉PA：打左灯进入减速车道',hwPAin:'青葉PA：可停车休息，再从加速车道汇入',hwEnd:'前方出口・收费站',hPA:'PA 内限速 20；离开时先看本线车流',hUp:'上坡：提前给油，停车后起步注意溜车',hDown:'下坡：松油门控制车速，不要一直踩刹车',navIC:'直行进入高速'});
+Object.assign(TX.zh.r,{oneway:['通行禁止違反（逆走）','逆向驶入了单行道。注意蓝底白箭头和红色禁止驶入标志。']});
+Object.assign(TX.ja,{iNext:a=>'次の交差点を'+a+'してください',iFollow:'道なりに進んでください',iU:'この先行き止まりです。Uターンしてください',mCourseD:'駅西口を出発し、指示に従って市内を走り桜町へ。途中でさまざまなイベントが起こります。減点方式、70点以上で合格。',mHwD:'若葉IC → 青葉トンネル → 青葉PA（減速車線・合流）→ 工事規制 → 山手出口 → 道の駅。',
+ mapTitle:'行き先をタップするとルートを案内します',hwTunnelAhead:'この先 青葉トンネル',hwPA:'この先 青葉PA：左合図で減速車線へ',hwPAin:'青葉PA：休憩後、加速車線から本線へ合流',hwEnd:'この先 出口・料金所',hPA:'PA内は20km/h。出るときは本線の流れを確認',hUp:'上り坂：早めにアクセル。坂道発進は後退に注意',hDown:'下り坂：アクセルを戻して速度を抑える。ブレーキの踏み続けに注意',navIC:'直進して高速へ'});
+Object.assign(TX.ja.r,{oneway:['通行禁止違反（逆走）','一方通行を逆走しました。']});
+Object.assign(TX.zh,{hTrack:'不要在电车轨道上持续行驶（右转前和避让时除外）',hTramStop:'电车停靠、没有安全地带、有人上下车：在电车后方停车等待',hTramIsland:'电车停靠、有安全地带：徐行通过',hGarage:'路边有车要驶出：减速，准备让行'});
+Object.assign(TX.zh.r,{trackbed:['軌道敷内通行','在路面电车的轨道内持续行驶。'],tramstop:['乗降客妨害（路面電車）','没有安全地带的电车站有人上下车时，必须在电车后方停车等待。'],tramslow:['徐行違反（安全地帯）','电车停靠在有安全地带的车站时，要徐行通过。']});
+Object.assign(TX.ja,{hTrack:'軌道敷内を走り続けない（右折・やむを得ない場合を除く）',hTramStop:'路面電車が停車中・安全地帯なし・乗降客あり：後方で停止して待つ',hTramIsland:'路面電車が停車中・安全地帯あり：徐行して通過',hGarage:'路外から車が出てきます：減速して進路を譲る準備を'});
+Object.assign(TX.ja.r,{trackbed:['軌道敷内通行','路面電車の軌道敷内を走り続けました。'],tramstop:['乗降客妨害（路面電車）','安全地帯のない停留所で乗降客がいるときは、後方で停止して待ちます。'],tramslow:['徐行違反（安全地帯）','安全地帯のある停留所に電車が停車中は徐行します。']});
+Object.assign(PTS,{trackbed:5,tramstop:0,tramslow:10,oneway:0,lanesig:5,buslane:10,sidegap:10,hitped:0,makikomi:0,emerg:0,nolight:10,etc:10,minspeed:10,gap:10,passlane:10});

@@ -1,9 +1,12 @@
 /* ---------- environment: time of day, weather, lights, wipers ---------- */
-const env={mode:'day',weather:'clear',tod:12,night:0,lights:false,wipers:false,tunnel:0,inTunnel:false,grip:1,flash:0,flashCol:'#fff',nolT:0,nolFlag:false};
-const WET=[];let dome,rainLines,snowPts,headLamp,wiperPiv=[],rainOff,snowOff;
+const env={sight:1,npcCap:1,npcDec:2.2,headway:0,mode:'day',weather:'clear',tod:12,night:0,lights:false,wipers:false,tunnel:0,inTunnel:false,grip:1,flash:0,flashCol:'#fff',nolT:0,nolFlag:false};
+const WET=[],GLOW=[];                                    // additive light pools that fade in at night
+const glowTex=cv(64,64,c=>{const g=c.createRadialGradient(32,32,2,32,32,31);g.addColorStop(0,'rgba(255,236,190,0.9)');g.addColorStop(0.5,'rgba(255,225,170,0.3)');g.addColorStop(1,'rgba(255,220,160,0)');c.fillStyle=g;c.fillRect(0,0,64,64);});
+const glowMat=o=>{const m=new THREE.MeshBasicMaterial(Object.assign({map:glowTex,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4},o));GLOW.push(m);return m;};
+const beamMat=glowMat({}),aviMat=new THREE.MeshBasicMaterial({color:0x330808});let dome,rainLines,snowPts,headLamp,wiperPiv=[],rainOff,snowOff;
 const cA=new THREE.Color(),cB=new THREE.Color();
 function buildEnv(){
-  dome=new THREE.Mesh(new THREE.SphereGeometry(395,16,10),new THREE.MeshBasicMaterial({color:0x070b18,side:THREE.BackSide,transparent:true,opacity:0,depthWrite:false,fog:false}));dome.renderOrder=-1;dome.frustumCulled=false;scene.add(dome);
+  dome=new THREE.Mesh(new THREE.SphereGeometry(395,16,10),new THREE.MeshBasicMaterial({color:0x070b18,side:THREE.BackSide,transparent:true,opacity:0,depthWrite:false,fog:false}));dome.renderOrder=-1;dome.frustumCulled=false;dome.userData.dyn=true;scene.add(dome);
   const NR=700,rp=new Float32Array(NR*6);rainOff=new Float32Array(NR*3);for(let k=0;k<NR*3;k+=3){rainOff[k]=(Math.random()-0.5)*36;rainOff[k+1]=Math.random()*14;rainOff[k+2]=(Math.random()-0.5)*36;}
   const rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.BufferAttribute(rp,3));rainLines=new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:0xcfd9e4,transparent:true,opacity:0.55,fog:false}));rainLines.frustumCulled=false;rainLines.visible=false;scene.add(rainLines);
   const NS=900,sp=new Float32Array(NS*3);snowOff=new Float32Array(NS*3);for(let k=0;k<NS*3;k+=3){snowOff[k]=(Math.random()-0.5)*40;snowOff[k+1]=Math.random()*14;snowOff[k+2]=(Math.random()-0.5)*40;}
@@ -17,17 +20,21 @@ function updateEnv(dt){
   const h=env.tod,n=h<5?1:h<7?1-(h-5)/2:h<17?0:h<19?(h-17)/2:1;env.night=n;
   env.tunnel+=clamp((env.inTunnel?1:0)-env.tunnel,-dt*1.6,dt*1.6);const tu=env.tunnel,dimW=w==='rain'?0.72:w==='snow'?0.86:1;
   env.grip=w==='rain'?0.7:w==='snow'?0.45:1;
-  let amb=(0.72+(0.15-0.72)*n)*dimW;amb+=(0.34-amb)*tu;hemi.intensity=amb;hemi.color.setHex(0xffffff).lerp(cA.setHex(0xffc98a),tu*0.8).lerp(cA.setHex(0x9fb4ff),n*0.35*(1-tu));
+  // other drivers see less far, drive slower and brake more gently in bad weather or at night
+  env.sight=(w==='snow'?0.6:w==='rain'?0.8:1)*(n>0.6?0.85:1);env.npcCap=w==='snow'?0.7:w==='rain'?0.88:1;env.npcDec=2.2*(w==='snow'?0.55:w==='rain'?0.8:1);env.headway=w==='clear'?0:w==='rain'?0.35:0.7;
+  let amb=(0.72+(0.21-0.72)*n)*dimW;amb+=(0.34-amb)*tu;hemi.intensity=amb;hemi.color.setHex(0xffffff).lerp(cA.setHex(0xffc98a),tu*0.8).lerp(cA.setHex(0x9fb4ff),n*0.35*(1-tu));
   sun.intensity=(0.38+(0.02-0.38)*n)*dimW*(1-tu);
   // sky: a tinted dome over the daytime skybox
   const dm=dome.material;if(w==='clear'){dm.color.setHex(0xd98a5c).lerp(cA.setHex(0x060a16),Math.min(1,n*1.25));dm.opacity=Math.min(0.95,n*1.5)*(n<0.5?0.75+n*0.5:1);}
   else{dm.color.setHex(w==='rain'?0x8a9299:0xc3c9ce).lerp(cA.setHex(0x060a16),n);dm.opacity=Math.max(0.86,n*0.95);}
   dome.position.copy(camera.position);
   cB.setHex(w==='rain'?0x969da4:w==='snow'?0xc9ced2:0xd9dad2).lerp(cA.setHex(0xc98f6a),w==='clear'?(1-Math.abs(2*n-1))*0.5:0).lerp(cA.setHex(0x0a0e18),n*n).lerp(cA.setHex(0x16130f),tu);
-  scene.fog.color.copy(cB);scene.fog.near=w==='clear'?80:w==='rain'?38:28;scene.fog.far=(w==='clear'?230:w==='rain'?160:130)*(1-0.12*n);
+  scene.fog.color.copy(cB);scene.fog.near=w==='clear'?80:w==='rain'?38:28;scene.fog.far=(w==='clear'?230:w==='rain'?160:130)*(1-0.12*n);if(env.noFog){scene.fog.near=5000;scene.fog.far=9000;}
+  else{const far=Math.round(scene.fog.far*1.04/10)*10;if(camera.far!==far){camera.far=far;camera.updateProjectionMatrix();dome.scale.setScalar((far-6)/395);camRear.far=camL.far=camR.far=Math.min(far,170);camRear.updateProjectionMatrix();camL.updateProjectionMatrix();camR.updateProjectionMatrix();}}
   const f=(1-0.6*Math.max(n*0.95,tu*0.5))*Math.sqrt(dimW);for(const m of DIM)m.color.copy(m.userData.base).multiplyScalar(f);
   for(const m of NIGHT)m.emissiveIntensity=n>0.3?n*0.9:0;streetLampMat.color.setHex(n>0.35?0xffe7b0:0x8d9399);
   for(const m of WET){m.shininess=w==='rain'?55:0;m.specular.setHex(w==='rain'?0x55595e:0x000000);m.color.setHex(w==='snow'?0xd6dadd:0xffffff);}
+  const glw=Math.max(0,(Math.max(n,tu)-0.3)/0.7);for(const m of GLOW)m.opacity=glw*(m.userData.k||0.5);aviMat.color.setHex(n>0.4&&Math.floor(time*0.9)%2?0xff2a2a:0x330808);
   headLamp.intensity=env.lights?1.3+1.4*Math.max(n,tu):0;
   // rain / snow particles follow the camera; nothing falls inside the tunnel or the cabin
   const show=tu<0.5,cx=camera.position.x,cy=camera.position.y,cz=camera.position.z;
