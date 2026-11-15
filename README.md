@@ -9,7 +9,7 @@
 
 ## 运行
 
-`index.html` 是页面片段（没有 `<html>` 外壳），用任意静态服务器打开即可：
+源文件是 `app.html`（页面主体）。改完后运行 `python3 build.py` 生成可独立打开的 `index.html`（GitHub Pages 用的就是它）。本地预览：
 
 ```bash
 python3 -m http.server 8000

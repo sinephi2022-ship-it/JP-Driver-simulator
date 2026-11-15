@@ -1,3 +1,16 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>路上教習シミュレーター</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap">
@@ -816,3 +829,6 @@ applyLang();
 if(document.fonts&&document.fonts.load){Promise.all([document.fonts.load('900 56px "Zen Kaku Gothic New"','止まれゴール仮免許練習中'),document.fonts.load('700 100px "Barlow Condensed"','345'),loadImg('brick','tex/brick.jpg'),loadImg('grass','tex/grasslight.jpg')]).then(boot,boot);setTimeout(boot,4000);}else Promise.all([loadImg('brick','tex/brick.jpg'),loadImg('grass','tex/grasslight.jpg')]).then(boot);
 })();
 </script>
+
+</body>
+</html>
