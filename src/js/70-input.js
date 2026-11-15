@@ -60,7 +60,7 @@ $('camBtn').onclick=()=>{camMode=1-camMode;};$('sndBtn').onclick=$('pSnd').oncli
 $('endBtn').onclick=()=>{if(state==='drive')finish();};$('pauseBtn').onclick=()=>setPause(true);$('resumeBtn').onclick=()=>setPause(false);$('pRestart').onclick=()=>{$('pause').hidden=true;begin();};$('pMenu').onclick=()=>{$('pause').hidden=true;$('hud').hidden=true;resetGame();state='menu';$('start').hidden=false;};
 function goFull(on){const d=document,el=d.documentElement;try{if(on===false||(on==null&&(d.fullscreenElement||d.webkitFullscreenElement))){(d.exitFullscreen||d.webkitExitFullscreen).call(d);return;}
     const r=(el.requestFullscreen||el.webkitRequestFullscreen);if(!r){note(T('fsNo'));return;}const pr=r.call(el,{navigationUI:'hide'});if(pr&&pr.then)pr.then(()=>{try{screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}).catch(()=>{if(on==null)note(T('fsNo'));});}catch(e){if(on==null)note(T('fsNo'));}}
-$('fsBtn').onclick=()=>goFull();
+$('fsBtn').onclick=$('pFs').onclick=()=>goFull();
 function toggleLights(){env.lights=!env.lights;beep(700,0.03,0.03);}
 function begin(){
   mode=$('modeFree').checked?'free':$('modeHw').checked?'hw':'course';hintsOn=$('hintsOn').checked;
@@ -76,7 +76,7 @@ $('menuBtn').onclick=()=>{resetGame();state='menu';$('result').hidden=true;$('st
 ['langZh','langJa'].forEach(id=>$(id).addEventListener('change',e=>{lang=e.target.value;try{localStorage.setItem('rojo-lang',lang);}catch(_){}applyLang();}));
 try{const s=localStorage.getItem('rojo-lang');if(s==='ja'){lang='ja';$('langJa').checked=true;}}catch(_){}
 
-window.__sim={speed(n){simN=n;},auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
+window.__sim={meshY,FOOT,onRoad,nearest,PLACES,speed(n){simN=n;},auto(v){autoOn=v;},get guide(){return guide},get score(){return score},cam(v){dbgCam=v;env.noFog=!!v;camera.far=v?6000:420;camera.updateProjectionMatrix();},env,get npcs(){return npcs},get emerg(){return emerg},get moto(){return moto},get child(){return child},tp(key,s,dir,v){startAt(key,s,dir);car.v=v||0;car.gear='D';car.hb=false;},ED,ND,get state(){return state},get car(){return car},get v(){return violations},get ped(){return ped},get rail(){return rail}};
 /* ---------- boot ---------- */
 let booted=false;
 function boot(){if(booted)return;booted=true;buildWorld();resetGame();applyLang();resize();requestAnimationFrame(frame);}

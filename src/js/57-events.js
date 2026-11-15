@@ -41,7 +41,7 @@ function resetEvents(){if(!gar.n)gar.n=addNpc('car',{e:gar.e,dir:-1,s:gar.s0,k:0
 const SOL=[],STATB=[];                                // STATB: parked vehicles as boxes
 function solids(){SOL.length=0;const add=(x,z,hx,hz,hl,hw)=>{if(Math.abs(x-car.x)+Math.abs(z-car.z)<hl+14)SOL.push(x,z,hx,hz,hl,hw);};
   for(let i=0;i<STATB.length;i+=6)add(STATB[i],STATB[i+1],STATB[i+2],STATB[i+3],STATB[i+4],STATB[i+5]);
-  for(const n of npcs)if(n.mesh.visible)add(n.x,n.z,n.hx,n.hz,n.hl,n.wid/2);const b=bikeNpc.n;add(b.x,b.z,b.hx,b.hz,0.85,0.3);
+  for(const n of npcs)if(n.mesh.visible&&Math.abs(n.y-car.y)<3)add(n.x,n.z,n.hx,n.hz,n.hl,n.wid/2);const b=bikeNpc.n;add(b.x,b.z,b.hx,b.hz,0.85,0.3);
   if(tram.veh)add(tram.x,tram.z,tram.hx||1,tram.hz||0,6.5,1.15);if(moto.on)add(moto.x,moto.z,moto.hx,moto.hz,1,0.35);if(emerg.on)add(emerg.x,emerg.z,emerg.hx,emerg.hz,emerg.veh.hl,emerg.veh.wid/2);return SOL;}
 // how deep the car (three circles along its length) is inside any obstacle at this pose; 0 = clear
 function depthAt(x,z,a,S){const fx=Math.sin(a),fz=-Math.cos(a);let d=0;

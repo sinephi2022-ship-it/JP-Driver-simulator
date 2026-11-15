@@ -14,13 +14,13 @@ function signPost(tex,w,h,x,y,z,tx,tz,ph,back,noPole){const yaw=yawOf(tx,tz);SIG
   const f=new THREE.Mesh(new THREE.PlaneGeometry(w,h),dim(new THREE.MeshBasicMaterial({map:back||backRect,alphaTest:0.4})));f.position.copy(m.position);f.rotation.y=yaw+Math.PI;scene.add(f);return m;}
 function boardTex(w,h,bg,draw){return cv(w,h,c=>{c.fillStyle=bg;c.fillRect(0,0,w,h);c.strokeStyle='#fff';c.lineWidth=6;c.strokeRect(6,6,w-12,h-12);c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';draw(c,w,h);});}
 const textBoard=(lines,w,h,bg,fg)=>boardTex(Math.round(w*56),Math.round(h*56),bg,(c,cw,ch)=>{c.fillStyle=fg||'#fff';lines.forEach((s,k)=>{c.font='900 '+Math.min(Math.round(ch/(lines.length+0.7)),Math.round(cw/(s.length+0.5)*1.05))+'px '+FONT;c.fillText(s,cw/2,ch*(k+0.5)/lines.length+2);});});
-function addTrees(trees,R,detail,hsl){if(!trees.length)return;const dm=new THREE.Object3D(),col=new THREE.Color();
+function addTrees(trees,R,detail,hsl){trees=trees.filter(t=>!(t[3]<12&&underDeck(t[0],t[1])));if(!trees.length)return;const dm=new THREE.Object3D(),col=new THREE.Color();
   const tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(0.12,0.17,2.4,5),L(0x6b5440),trees.length),cr=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.5,detail),L(0xffffff,{flatShading:!detail}),trees.length);
   trees.forEach((t,k)=>{dm.rotation.set(0,R()*6,0);dm.position.set(t[0],t[3]+1.2*t[2],t[1]);dm.scale.set(t[2],t[2],t[2]);dm.updateMatrix();tr.setMatrixAt(k,dm.matrix);dm.position.y=t[3]+3.3*t[2];dm.scale.set(t[2],t[2]*(1+R()*0.3),t[2]);dm.updateMatrix();cr.setMatrixAt(k,dm.matrix);cr.setColorAt(k,hsl?col.setHSL(hsl[0]+R()*0.03,hsl[1],hsl[2]+R()*0.08):col.setHSL(0.27+R()*0.07,0.42,0.26+R()*0.1));});
   scene.add(tr,cr);}
 // terrain height with the ground benched level around roads (not above tunnels)
-function groundY(x,z){let t=TH(x,z);const nr=nearest(x,z,NT,2);if(!nr)return t;const e=nr.e;if(e.tun&&nr.s>e.tun[0]&&nr.s<e.tun[1])return nr.d<26?Math.max(t,nr.y+6.9):t;
-  const w=Math.max(e.wl[nr.i],e.wr[nr.i])+(e.walk?3:0.8);return lerp(nr.y-0.12,t,sstep(w+2,w+24,nr.d));}
+function groundY(x,z){let t=TH(x,z);const nr=nearest(x,z,NT,3,null,null,true);if(!nr)return t;const e=nr.e;if(e.tun&&nr.s>e.tun[0]&&nr.s<e.tun[1])return nr.d<26?Math.max(t,nr.y+6.9):t;
+  const w=Math.max(e.wl[nr.i],e.wr[nr.i])+(e.walk?3:0.8);return lerp(nr.y-0.22,t,sstep(w+17.5,w+46,nr.d));}
 // a strip of road surface between two lateral offsets (functions of the sample index)
 function strip(e,i0,i1,fL,fR,dy,mat,vert){const n=i1-i0+1,pos=new Float32Array(n*6),uv=new Float32Array(n*4),idx=[];
   for(let k=0;k<n;k++){const i=i0+k,nx=e.tz[i],nz=-e.tx[i],l=typeof fL==='function'?fL(i):fL,r=typeof fR==='function'?fR(i):fR,y=e.py[i];
@@ -28,6 +28,9 @@ function strip(e,i0,i1,fL,fR,dy,mat,vert){const n=i1-i0+1,pos=new Float32Array(n
     uv.set([0,e.ps[i]/10,1,e.ps[i]/10],k*4);if(k<n-1)idx.push(2*k,2*k+1,2*k+2,2*k+1,2*k+3,2*k+2);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);scene.add(m);return m;}
 const wall=(e,i0,i1,off,y0,y1,mat)=>strip(e,i0,i1,off,y0,y1,mat,true);
+let TERR=null;
+// height of the built terrain mesh at a point (used by the self-check)
+function meshY(x,z){const nb=PAinfo.nb;for(const [s0,d] of[[nb.tun[0],1],[nb.tun[1],-1]]){const q=edgePos(nb,s0,0),rx=x-q.x,rz=z-q.z,al=(rx*q.tx+rz*q.tz)*d;if(al>-17&&al<17&&Math.abs(rx*q.tz-rz*q.tx)<26)return -99;}const t=TERR,fx=clamp((x-t.x0)/t.dx,0,t.nx-0.001),fz=clamp((z-t.z0)/t.dz,0,t.nz-0.001),i=Math.floor(fx),j=Math.floor(fz),a=fx-i,b=fz-j,H=(q,r)=>t.h[r*(t.nx+1)+q];return Math.max(lerp(lerp(H(i,j),H(i+1,j),a),lerp(H(i,j+1),H(i+1,j+1),a),b),a+b<1?H(i,j)+(H(i+1,j)-H(i,j))*a+(H(i,j+1)-H(i,j))*b:H(i+1,j+1)+(H(i,j+1)-H(i+1,j+1))*(1-a)+(H(i+1,j)-H(i+1,j+1))*(1-b));}
 let GOAL=null,PEDX=null,tollGates=[];
 
 function buildWorld(){
@@ -43,8 +46,9 @@ function buildWorld(){
       col[k*3]=c.r;col[k*3+1]=c.g;col[k*3+2]=c.b;}
     {const nb=PAinfo.nb,mouths=[[nb.tun[0],1],[nb.tun[1],-1]].map(([s,d])=>{const q=edgePos(nb,s,0);return[q.x,q.z,q.tx*d,q.tz*d];}),ix=g.index.array,keep=[];
       for(let k=0;k<ix.length;k+=3){const cx=(p.getX(ix[k])+p.getX(ix[k+1])+p.getX(ix[k+2]))/3,cz=(p.getZ(ix[k])+p.getZ(ix[k+1])+p.getZ(ix[k+2]))/3;let cut=false;
-        for(const m of mouths){const rx=cx-m[0],rz=cz-m[1],al=rx*m[2]+rz*m[3],u=(rx*m[3]-rz*m[2])*(m===mouths[0]?1:-1);if(al>-4&&al<17&&u>-21&&u<8)cut=true;}
+        for(const m of mouths){const rx=cx-m[0],rz=cz-m[1],al=rx*m[2]+rz*m[3],u=(rx*m[3]-rz*m[2])*(m===mouths[0]?1:-1);if(al>-17&&al<17&&u>-25&&u<12)cut=true;}
         if(!cut)keep.push(ix[k],ix[k+1],ix[k+2]);}g.setIndex(keep);}
+    TERR={x0,z0,dx:(x1-x0)/nx,dz:(z1-z0)/nz,nx,nz,h:Float32Array.from({length:p.count},(_,k)=>p.getY(k))};
     g.setAttribute('color',new THREE.BufferAttribute(col,3));g.computeVertexNormals();const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true}));scene.add(m);
     const sea=new THREE.Mesh(new THREE.PlaneGeometry(2600,4600),P(0x2f6f96,{shininess:60,specular:0x6f8fa0,transparent:true,opacity:0.92}));sea.rotation.x=-Math.PI/2;sea.position.set(1900,0,-1450);scene.add(sea);
     const far=new THREE.Mesh(new THREE.PlaneGeometry(4000,6000),L(0x55813f));far.rotation.x=-Math.PI/2;far.position.set(-2279,1.9,-1450);scene.add(far);const nth=new THREE.Mesh(new THREE.PlaneGeometry(2200,1500),L(0x6fa04e));nth.rotation.x=-Math.PI/2;nth.position.set(570,39.5,-3949);scene.add(nth);
@@ -65,6 +69,13 @@ function buildWorld(){
           if(sd>0)strip(e,a,b,k=>e.wl[k],e.w,0.07,e.kind==='hw'?RM.extra:RM.bay);else strip(e,a,b,-e.w,k=>-e.wr[k],0.07,RM.bay);st=-1;}}}
     if(e.walk){const [i0,i1]=idxR(e,e.a.r+4.6,e.len-e.b.r-4.6);if(i1>i0){strip(e,i0,i1,k=>e.wl[k]+2.7,k=>e.wl[k],0.2,walkMat);strip(e,i0,i1,k=>-e.wr[k],k=>-e.wr[k]-2.7,0.2,walkMat);}}
     if(e.kind==='mount'||e.kind==='coast'||e.kind==='coast3'){const [i0,i1]=idxR(e,e.a.r?e.a.r+9:0,e.len-(e.b.r?e.b.r+9:0));if(i1>i0){wall(e,i0,i1,k=>e.wl[k]+0.5,0.35,0.8,railing);wall(e,i0,i1,k=>-e.wr[k]-0.5,0.35,0.8,railing);}}}
+  // flyover: parapets, the underside of the deck, piers and abutments
+  for(const e of ED){if(!e.bump)continue;let i0=-1,i1=-1,j0=-1,j1=-1;for(let i=0;i<e.n;i++){if(e.bh[i]>0.5){if(i0<0)i0=i;i1=i;}if(e.elev[i]){if(j0<0)j0=i;j1=i;}}const W2=e.w+3.0,cm=L(0xa9aaa6,{side:THREE.DoubleSide});
+    wall(e,i0,i1,W2,-0.75,1.15,cm);wall(e,i0,i1,-W2,-0.75,1.15,cm);strip(e,j0,j1,W2,-W2,-0.75,cm);
+    const ab=e.bump[0]==='a'?j1:j0,pier=e.bump[0]==='a'?Math.round((j0*0.35+j1*0.65)):Math.round((j0*0.65+j1*0.35));
+    for(const [i,full] of[[ab,true],[pier,false]]){const q=edgePos(e,e.ps[i],0),gy=groundY(q.x,q.z),h=e.py[i]-0.75-gy,G=new THREE.Group();G.position.set(q.x,gy,q.z);G.rotation.y=yawOf(q.tx,q.tz);scene.add(G);box(cm,full?2*W2:2*W2-3,h,full?2.2:1.3,0,h/2,0,G);}}
+  {const hl=cv(256,256,c=>{c.beginPath();c.arc(128,128,108,0,7);c.fillStyle='#fff';c.fill();c.lineWidth=28;c.strokeStyle='#d4222b';c.stroke();c.fillStyle='#1c4c9c';c.font='700 78px "Barlow Condensed",Arial,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('3.8m',128,132);for(const d of[1,-1]){c.beginPath();c.moveTo(128,128-d*92);c.lineTo(110,128-d*70);c.lineTo(146,128-d*70);c.closePath();c.fill();}});
+    for(const [key,d] of[['O2-N3',1],['N3-N4',-1]]){const e=EK[key],q=edgePos(e,d>0?e.len-38:38,d*(e.w+1.0));signPost(hl,0.9,0.9,q.x,q.y,q.z,q.tx*d,q.tz*d,2.3,backRound);}}
   for(const k in ND){const n=ND[k];if(!n.r)continue;const m=new THREE.Mesh(new THREE.CircleGeometry(n.r+4.4,36),baseMat);m.rotation.x=-Math.PI/2;m.position.set(n.x,n.y+0.085,n.z);scene.add(m);}
   // --- markings, signals, signs
   const white=decalMat({color:0xf0f2f4});

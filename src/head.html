@@ -110,7 +110,9 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
   .touchOnly{display:block}
   .mini{min-height:36px;padding:6px 12px}
   .blk{width:50px;height:50px}
-  #dash,#sndBtn,#endBtn{display:none}
+  #dash,#sndBtn,#endBtn,#fsBtn,#lightBtn,#mapBtn{display:none}
+  #map{width:150px;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+  .side .row{gap:8px!important}.mini{font-size:13px;min-width:54px;background:rgba(15,22,34,.72)}
   .ctl{display:flex}.tspd{display:block}
 }
 @media (max-width:480px){.stick{width:108px;height:108px}#gearBtn,#hbBtn{width:60px}#gearStrip{width:60px}.cap{font-size:9px;max-width:112px}}
@@ -119,7 +121,7 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
   #status{padding:5px 8px;gap:8px}.limit{width:38px;height:38px;border-width:5px;font-size:18px}.score b{font-size:22px}
   .board{padding:5px 10px;gap:8px;border-width:2px}.board .arrow{font-size:24px;width:26px}.board .txt{font-size:13px}.board .dist{font-size:16px}
   #hint{font-size:12px;padding:4px 8px}
-  #map{width:86px}
+  #map{width:128px}
   #toasts{top:70px;width:min(260px,40vw)}.toast p{display:none}
   .spd b{font-size:34px}.spd{min-width:64px}#dash{padding:4px 10px;gap:8px}
   .stick{width:112px;height:112px}.cap{display:none}#gearBtn{height:60px}#hbBtn{height:40px}.tspd b{font-size:22px}
@@ -128,7 +130,7 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
 @media (max-width:640px){
   .top{grid-template-columns:minmax(0,1fr) auto}
   #instr{grid-column:1/-1;order:-1;justify-self:stretch}
-  #map{width:112px}
+  #map{width:132px}
   #toasts{top:206px}
   .board .txt{font-size:14px}
 }
@@ -237,7 +239,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
         <span class="lbl" data-t="lblTime"></span>
         <div class="seg"><label><input type="radio" name="tod" value="day" checked><span data-t="tDay"></span></label><label><input type="radio" name="tod" value="dusk"><span data-t="tDusk"></span></label><label><input type="radio" name="tod" value="night"><span data-t="tNight"></span></label><label><input type="radio" name="tod" value="cycle"><span data-t="tCycle"></span></label></div>
         <span class="lbl" data-t="lblWx"></span>
-        <div class="seg"><label><input type="radio" name="wx" value="clear" checked><span data-t="wClear"></span></label><label><input type="radio" name="wx" value="rain"><span data-t="wRain"></span></label><label><input type="radio" name="wx" value="snow"><span data-t="wSnow"></span></label></div>
+        <div class="seg"><label><input type="radio" name="wx" value="clear" checked><span data-t="wClear"></span></label><label><input type="radio" name="wx" value="rain"><span data-t="wRain"></span></label><label><input type="radio" name="wx" value="snow"><span data-t="wSnow"></span></label><label><input type="radio" name="wx" value="auto"><span data-t="wAuto"></span></label></div>
       </div>
       <div class="modes">
         <label class="mode"><input type="radio" name="mode" id="modeCourse" value="course" checked><b data-t="mCourse"></b><span data-t="mCourseD"></span></label>
@@ -270,7 +272,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
     <div class="card" style="width:min(380px,100%)">
       <div class="plate"><h1 data-t="paused"></h1><p data-t="pauseTip"></p></div>
       <div class="row"><button class="cta" id="resumeBtn" type="button" data-t="resume"></button><button class="ghost" id="pRestart" type="button" data-t="retry"></button><button class="ghost" id="pMenu" type="button" data-t="menu"></button></div>
-      <div class="row"><button class="ghost" id="pEnd" type="button" data-t="end"></button><button class="ghost" id="pSnd" type="button"></button></div>
+      <div class="row"><button class="ghost" id="pEnd" type="button" data-t="end"></button><button class="ghost" id="pSnd" type="button"></button><button class="ghost" id="pFs" type="button" data-t="fsBtn"></button></div>
       <p class="note" data-t="modeTo"></p>
       <div class="row"><button class="ghost" data-mode="course" type="button" data-t="mCourse"></button><button class="ghost" data-mode="free" type="button" data-t="mFree"></button><button class="ghost" data-mode="hw" type="button" data-t="mHw"></button></div>
     </div>

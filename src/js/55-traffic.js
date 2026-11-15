@@ -48,9 +48,9 @@ function updateTraffic(dt){
     // vehicle ahead: same lane by distance along the road, and anything in the box straight ahead
     let lead=null,gap=1e9,lv=0;
     if(pd<520){for(const o of npcs){if(o===n)continue;if(o.e===e&&o.dir===n.dir&&!o.bez&&!n.bez){if(Math.abs(o.u-n.u)<1.6){const q=(o.s-n.s)*n.dir-o.hl-n.hl;if(q>-2&&q<gap){gap=q;lead=o;lv=o.v;}}continue;}
-        const rx=o.x-n.x,rz=o.z-n.z,al=rx*n.hx+rz*n.hz;if(al>0&&al<26*env.sight&&Math.abs(rx*n.hz-rz*n.hx)<1.6&&o.hx*n.hx+o.hz*n.hz>0.2){const q=al-o.hl-n.hl;if(q<gap){gap=q;lead=o;lv=o.v;}}}}
+        const rx=o.x-n.x,rz=o.z-n.z,al=rx*n.hx+rz*n.hz;if(al>0&&al<26*env.sight&&Math.abs(rx*n.hz-rz*n.hx)<1.6&&o.hx*n.hx+o.hz*n.hz>0.2&&Math.abs(o.y-n.y)<3){const q=al-o.hl-n.hl;if(q<gap){gap=q;lead=o;lv=o.v;}}}}
     const rx=car.x-n.x,rz=car.z-n.z,along=rx*n.hx+rz*n.hz,lat=Math.abs(rx*n.hz-rz*n.hx);
-    if(along>0&&along<(hwy?75:40)*env.sight&&lat<n.wid/2+1.2){const q=along-n.hl-2.3;if(q<gap){gap=q;lead=car;lv=Math.abs(car.v);}}
+    if(along>0&&along<(hwy?75:40)*env.sight&&lat<n.wid/2+1.2&&Math.abs(car.y-n.y)<3){const q=along-n.hl-2.3;if(q<gap){gap=q;lead=car;lv=Math.abs(car.v);}}
     {const b=bikeNpc.n,bx=b.x-n.x,bz=b.z-n.z,al=bx*n.hx+bz*n.hz;if(al>0&&al<26&&Math.abs(bx*n.hz-bz*n.hx)<1.9&&b.hx*n.hx+b.hz*n.hz>0.2){const q=al-b.hl-n.hl;if(q<gap){gap=q;lead=b;lv=b.v;}}}
     if(lead===bikeNpc.n){n.ut=laneU(e,n.dir,0)-n.dir*1.2;if(gap<14&&Math.abs(n.u-n.ut)<0.5){lead=null;gap=1e9;}else cap=Math.min(cap,6);}
     else if(hwy&&!n.bez){const works=e===PAinfo.nb&&n.s>PAinfo.works[0]-90&&n.s<PAinfo.works[1]+15,L0=laneU(e,1,0),L1=laneU(e,1,1),inR=n.k===1;
@@ -72,6 +72,6 @@ function updateTraffic(dt){
           n.bez={e:f,dir:nx.dir,s:s2,u:u2,tc:nx.tc,t:0,x0:p0.x,z0:p0.z,y0:p0.y,x2:p2.x,z2:p2.z,y2:p2.y,cx:(p0.x+p0.tx*n.dir*h+p2.x-p2.tx*nx.dir*h)/2,cz:(p0.z+p0.tz*n.dir*h+p2.z-p2.tz*nx.dir*h)/2,len:Math.max(3,Math.hypot(p2.x-p0.x,p2.z-p0.z)*1.08)};n.k=k;n.ut=u2;}}
       else placeNpc(n);}
     if(n.mesh.visible)vehLights(n.veh,n.brake,n.sig,flash);
-    if(active&&along>-3&&along<n.hl+2.6&&lat<n.wid/2+1.0&&n.v>0.3){n.v=0;}                    // never drive into the player
+    if(active&&along>-3&&along<n.hl+2.6&&lat<n.wid/2+1.0&&n.v>0.3&&Math.abs(car.y-n.y)<3){n.v=0;}                    // never drive into the player
   }
 }

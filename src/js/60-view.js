@@ -15,14 +15,16 @@ const mapCol=e=>e.kind==='hw'||e.kind==='ramp'?'#3f8f6a':e.kind==='main'?'#8b949
 function drawRoads(g,X,Z,k,cx,cz,rad){g.lineCap='round';g.lineJoin='round';
   for(const e of ED){if(rad&&Math.min(Math.hypot(e.a.x-cx,e.a.z-cz),Math.hypot(e.b.x-cx,e.b.z-cz),Math.hypot(e.px[e.n>>1]-cx,e.pz[e.n>>1]-cz))>rad+e.len/2)continue;
     g.strokeStyle=mapCol(e);g.lineWidth=Math.max(2,e.w*2*k*(rad?1:1.6));g.beginPath();g.moveTo(X(e.px[0]),Z(e.pz[0]));for(let i=2;i<e.n;i+=2)g.lineTo(X(e.px[i]),Z(e.pz[i]));g.lineTo(X(e.px[e.n-1]),Z(e.pz[e.n-1]));g.stroke();}}
+let mapSpan=300;
 function drawMap(){ // minimap: north up, 520 m across, centred on the car
-  const w=mapC.width,h=mapC.height,k=w/520,X=x=>(x-car.x)*k+w/2,Z=z=>(z-car.z)*k+h/2;mx.clearRect(0,0,w,h);mx.fillStyle='#1a2634';mx.fillRect(0,0,w,h);
+  mapSpan+=(clamp(230+Math.abs(car.v)*17,230,640)-mapSpan)*0.06;const w=mapC.width,h=mapC.height,k=w/mapSpan,X=x=>(x-car.x)*k+w/2,Z=z=>(z-car.z)*k+h/2;mx.clearRect(0,0,w,h);mx.fillStyle='#1a2634';mx.fillRect(0,0,w,h);
   mx.fillStyle='#24506b';mx.beginPath();mx.moveTo(w,0);for(let z=car.z-h/k/2;z<=car.z+h/k/2+20;z+=20)mx.lineTo(X(coastX(z)+30),Z(z));mx.lineTo(w,h);mx.closePath();mx.fill();
-  drawRoads(mx,X,Z,k,car.x,car.z,330);
+  drawRoads(mx,X,Z,k,car.x,car.z,mapSpan*0.66);
+  if(guide&&guide.route){mx.strokeStyle='#4f9bff';mx.lineWidth=Math.max(4,7*k*2);mx.lineCap='round';mx.lineJoin='round';for(const e of[guide.cur,...guide.route.slice(0,6).map(q=>q[0])]){if(!e||!e.px)continue;mx.beginPath();mx.moveTo(X(e.px[0]),Z(e.pz[0]));for(let i=2;i<e.n;i+=2)mx.lineTo(X(e.px[i]),Z(e.pz[i]));mx.lineTo(X(e.px[e.n-1]),Z(e.pz[e.n-1]));mx.stroke();}}
   mx.setLineDash([6,5]);mx.strokeStyle='#b9a98e';mx.lineWidth=2.5;mx.beginPath();mx.moveTo(X(-260),Z(ZR));mx.lineTo(X(1090),Z(ZR));mx.stroke();mx.setLineDash([]);
-  for(const q in ND){const n=ND[q];if(!n.ctrl||Math.abs(n.x-car.x)>280||Math.abs(n.z-car.z)>220)continue;mx.fillStyle=n.ctrl==='sig'?'#1fc79a':'#e3414a';mx.beginPath();mx.arc(X(n.x),Z(n.z),4,0,7);mx.fill();}
+  for(const q in ND){const n=ND[q];if(!n.ctrl||Math.abs(n.x-car.x)>mapSpan*0.55||Math.abs(n.z-car.z)>mapSpan*0.45)continue;mx.fillStyle=n.ctrl==='sig'?'#1fc79a':'#e3414a';mx.beginPath();mx.arc(X(n.x),Z(n.z),4,0,7);mx.fill();}
   if(guide){const t=guide.wp[Math.min(guide.wi,guide.wp.length-1)],dx=t.x-car.x,dz=t.z-car.z,m=Math.hypot(dx,dz),lim=w/2-12,f=Math.min(1,lim/(m*k));mx.fillStyle='#ff5a62';mx.beginPath();mx.arc(w/2+dx*k*f,h/2+dz*k*f*(h/w>0.7?1:1),7,0,7);mx.fill();}
-  mx.fillStyle='#d5dae0';for(const n of npcs)if(Math.abs(n.x-car.x)<270&&Math.abs(n.z-car.z)<210)mx.fillRect(X(n.x)-2.5,Z(n.z)-2.5,5,5);
+  mx.fillStyle='#d5dae0';for(const n of npcs)if(Math.abs(n.x-car.x)<mapSpan*0.52&&Math.abs(n.z-car.z)<mapSpan*0.42)mx.fillRect(X(n.x)-2.5,Z(n.z)-2.5,5,5);
   mx.save();mx.translate(w/2,h/2);mx.rotate(car.a);mx.fillStyle='#f6b40e';mx.strokeStyle='#0f1622';mx.lineWidth=1.5;mx.beginPath();mx.moveTo(0,-9);mx.lineTo(6,7);mx.lineTo(0,4);mx.lineTo(-6,7);mx.closePath();mx.fill();mx.stroke();mx.restore();
 }
 const v3=new THREE.Vector3();

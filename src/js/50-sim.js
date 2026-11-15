@@ -1,6 +1,6 @@
 /* ---------- simulation ---------- */
 const PL={e:null},PL2={e:null};
-function locatePlayer(dt){const nr=nearest(car.x,car.z,PL,1);if(!nr)return;const e=nr.e,i=nr.i,fx=Math.sin(car.a),fz=-Math.cos(car.a),al=fx*nr.tx+fz*nr.tz;
+function locatePlayer(dt){const nr=nearest(car.x,car.z,PL,1,null,car.y)||nearest(car.x,car.z,PL,1);if(!nr)return;const e=nr.e,i=nr.i,fx=Math.sin(car.a),fz=-Math.cos(car.a),al=fx*nr.tx+fz*nr.tz;
   car.inNode=null;for(const n of[e.a,e.b])if(n.r&&Math.hypot(car.x-n.x,car.z-n.z)<n.r+2)car.inNode=n;
   car.e=e;car.s=nr.s;car.u=nr.u;car.tx=nr.tx;car.tz=nr.tz;car.dir=Math.abs(al)>0.5?Math.sign(al):0;
   const g=(e.py[i+1]-e.py[i])/(e.ps[i+1]-e.ps[i]);car.grade=g;car.slope=g*al;const k=Math.min(1,dt*10);car.y+=(nr.y-car.y)*k;car.pitch+=(Math.atan(g*al)-car.pitch)*k;}
@@ -14,8 +14,8 @@ function drive(dt){
   const nx=car.x+Math.sin(car.a)*car.v*dt,nz=car.z-Math.cos(car.a)*car.v*dt;
   const S=solids(),d1=depthAt(nx,nz,car.a,S);
   if(d1>0&&d1>depthAt(car.x,car.z,car.a,S)+0.001){if(Math.abs(car.v)>1.2&&invuln<time){invuln=time+3;violate('crash');}car.v=0;}   // solid: cannot push further in, but can always back out
-  else if(onRoad(nx,nz)){car.x=nx;car.z=nz;}
-  else{if(onRoad(nx,car.z))car.x=nx;else if(onRoad(car.x,nz))car.z=nz;car.v*=Math.pow(0.05,dt);if(Math.abs(car.v)>0.8)violate('curb');}
+  else if(onRoad(nx,nz,car.y)){car.x=nx;car.z=nz;}
+  else{if(onRoad(nx,car.z,car.y))car.x=nx;else if(onRoad(car.x,nz,car.y))car.z=nz;car.v*=Math.pow(0.05,dt);if(Math.abs(car.v)>0.8)violate('curb');}
   locatePlayer(dt);
 }
 function world(dt){

@@ -7,7 +7,7 @@ let dragYaw=0,dragPitch=0,dragging=false,mouseLook=false,mYaw=0,mPitch=0;const c
 let GOAL2=null;
 function startAt(key,s,dir){const e=EK[key],u0=e.oneway?laneU(e,1,0):laneU(e,dir,lanesOf(e,dir)-1),q=edgePos(e,s,u0);car={x:q.x,z:q.z,y:q.y,a:Math.atan2(q.tx*dir,-q.tz*dir),v:0,steer:0,gear:'P',hb:true,pitch:0,slope:0,grade:0,e,s,u:u0,dir,tx:q.tx,tz:q.tz};}
 function resetGame(){
-  if(mode==='hw')startAt('N3-IC1',EK['N3-IC1'].len-80,1);else startAt('S0-S1',28,1);
+  if(mode==='hw')startAt('N3u-IC1',EK['N3u-IC1'].len-80,1);else startAt('S0-S1',28,1);
   violations=[];score=100;nav=null;trk=pending=null;curLimit=40;overT=0;overFlag=false;wrongT=0;wrongFlag=false;goalT=0;invuln=0;blink=null;time=0;
   for(const k in cool)delete cool[k];for(const k in ft)delete ft[k];
   setGuide(mode==='course'?[...COURSE,'A2']:mode==='hw'?['IC1','IC0','VI','V3','V2']:null);

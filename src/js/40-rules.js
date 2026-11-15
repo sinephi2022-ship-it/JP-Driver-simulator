@@ -17,7 +17,7 @@ function setNav(nodeId,name){const p=PLACES.find(q=>q[0]===name);nav={name,bay:p
 function clearNav(){nav=null;setGuide(null);}
 function nextEdge(n,e,dir){ // edge to take after arriving at node n along (e,dir): an edge, 'G' at the destination, or null
   if(!guide)return null;const k=e.i+','+dir+','+guide.wi;if(gCache.k===k)return gCache.v;let v=null,wi=guide.wi;
-  if(n===guide.wp[wi])wi++;if(wi>=guide.wp.length)v='G';else{const r=findRoute(e,dir,guide.wp[wi]);v=r&&r.length?r[0][0]:null;}
+  if(n===guide.wp[wi])wi++;if(wi>=guide.wp.length){v='G';guide.route=[];}else{const r=findRoute(e,dir,guide.wp[wi]);v=r&&r.length?r[0][0]:null;guide.route=r||[];}guide.cur=e;
   gCache.k=k;gCache.v=v;return v;}
 let tbT=0,tbFlag=false;
 let sigSide=null,sigHold=0,laneId=null,laneCancel=0,busT=0,busFlag=false,rowEnterT=-99,owT=0,owFlag=false,ft={},hwS={gapT:0,slowT:0,passT:0,was:false,pa:false};
