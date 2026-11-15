@@ -3,12 +3,15 @@ const CELL=24,HASH=new Map();
 function buildNet(){
   for(const k in ND){const n=ND[k];n.y=TH(n.x,n.z);n.off=(Math.abs(n.x*7+n.z*13)|0)%32;}
   // southbound carriageway of the expressway: the northbound line shifted 13 m to the right, reversed
-  {const nb=ED.find(e=>e.kind==='hw'),pts=[[nb.a.x,nb.a.z],...nb.mid,[nb.b.x,nb.b.z]],mid=[];
-    for(let i=pts.length-2;i>=1;i--){const dx=pts[i+1][0]-pts[i-1][0],dz=pts[i+1][1]-pts[i-1][1],m=Math.hypot(dx,dz);mid.push([pts[i][0]-dz/m*13,pts[i][1]+dx/m*13]);}
-    ed('VI','IC0','hw',mid,{flat:true});}
-  for(const e of ED)sampleEdge(e);
+  const nb0=ED.find(e=>e.kind==='hw'),sb0=ed('VI','IC0','hw',[],{flat:true,pre:true});
+  for(const e of ED)if(!e.pre)sampleEdge(e);
+  {const X=[],Z=[];for(let i=nb0.n-1;i>=0;i--){const s=nb0.ps[i],o=13*sstep(0,90,s)*sstep(nb0.len,nb0.len-90,s);X.push(nb0.px[i]-nb0.tz[i]*o);Z.push(nb0.pz[i]+nb0.tx[i]*o);}finishEdge(sb0,X,Z);sb0.tun=[sb0.len-nb0.tun[1],sb0.len-nb0.tun[0]];}
   addPA();
   for(const e of ED){EK[e.key]=e;for(let i=0;i<e.n-1;i++){const k=Math.floor((e.px[i]+e.px[i+1])/2/CELL)+','+Math.floor((e.pz[i]+e.pz[i+1])/2/CELL);let l=HASH.get(k);if(!l)HASH.set(k,l=[]);l.push(e.i,i);}}
+  // a lay-by with parking in front of every destination: the road is widened on that side
+  for(const p of PLACES){const nr=nearest(p[2],p[3],{},4);if(!nr)continue;const e=nr.e;if(e.kind==='hw'||e.kind==='ramp'||e.toll||e.kind==='narrow1'||e.len<110)continue;
+    const s=clamp(nr.s,46,e.len-46),side=nr.u>0?1:-1,arr=side>0?e.wl:e.wr;for(let i=0;i<e.n;i++){const d=Math.abs(e.ps[i]-s);if(d<21)arr[i]=Math.max(arr[i],e.w+6.2*(1-sstep(14,21,d)));}
+    const q=edgePos(e,s,side*(e.w+3.2));p.bay={e,s,side,x:q.x,z:q.z,y:q.y};}
   for(const k in ND){const n=ND[k];n.r=n.ed.length<=2?0:Math.max(...n.ed.map(e=>e.w))+2.2;n.phase={};
     if(n.ctrl==='sig'){const m=n.ed.reduce((a,b)=>b.w>a.w?b:a),ax=away(n,m);for(const e of n.ed){const v=away(n,e);n.phase[e.i]=Math.abs(v[0]*ax[0]+v[1]*ax[1])>0.5?0:1;}}}
 }

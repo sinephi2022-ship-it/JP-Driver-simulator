@@ -13,7 +13,7 @@ let lastHint=null;function setHint(k){if(!hintsOn)k=null;if(k===lastHint)return;
 // --- guidance: a list of waypoint nodes; the next edge to take at a junction comes from the shortest route
 let guide=null,gCache={k:'',v:null};
 function setGuide(ids,name){guide=ids?{wp:ids.map(i=>ND[i]),wi:0,name}:null;gCache.k='';trk=null;lastInstr='';}
-function setNav(nodeId,name){nav={name};setGuide([nodeId],name);note(T('navSet')(name));}
+function setNav(nodeId,name){const p=PLACES.find(q=>q[0]===name);nav={name,bay:p&&p.bay};setGuide([nodeId],name);note(T('navSet')(name));}
 function clearNav(){nav=null;setGuide(null);}
 function nextEdge(n,e,dir){ // edge to take after arriving at node n along (e,dir): an edge, 'G' at the destination, or null
   if(!guide)return null;const k=e.i+','+dir+','+guide.wi;if(gCache.k===k)return gCache.v;let v=null,wi=guide.wi;
@@ -27,7 +27,7 @@ function rules(dt){
   if(blink!==sigSide){sigSide=blink;sigHold=0;}else sigHold+=dt;
   const e=car.e,dir=car.dir,fx=Math.sin(car.a),fz=-Math.cos(car.a),stopped=Math.abs(car.v)<0.25,kmh=Math.abs(car.v)*3.6;if(!e)return;
   let hint=env.weather!=='clear'?(env.wipers?'hWet':'hWiper'):null;if(env.night>0.6&&!env.lights)hint='hLight';
-  const lat=car.u*dir,hwy=e.kind==='hw',ramp=e.kind==='ramp';
+  const lat=(car.u-(e.c||0))*dir,hwy=e.kind==='hw',ramp=e.kind==='ramp';
   curLimit=e.limit;env.inTunnel=false;
   // --- junction ahead (inside the junction itself the nearest road is ambiguous: keep the last state)
   if(dir&&!car.inNode){const n=dir>0?e.b:e.a,D=dir>0?e.len-car.s:car.s;
@@ -38,7 +38,7 @@ function rules(dt){
       if(trk.pg!=null&&trk.pg>-0.6&&g<=-0.6&&car.v>0){if(st==='r')violate('signal');if(mustStop&&!trk.stopped)violate('stop');pending={n,e,dir,on:{L:trk.on.L,R:trk.on.R},next:trk.next};}
       trk.pg=g;
       const nx=nextEdge(n,e,dir),dist=g>0?Math.max(5,Math.round(g/5)*5)+' m':'';trk.next=nx;
-      if(nx==='G')setInstr('◎',T('navNear')(guide.name||n.name||''),dist);
+      if(nx==='G')setInstr('◎',T(nav&&nav.bay?'navBay':'navNear')(guide.name||n.name||''),nav&&nav.bay?Math.round(Math.hypot(car.x-nav.bay.x,car.z-nav.bay.z)/5)*5+' m':dist);
       else if(nx){const tc=turnClass(n,e,nx);trk.act=tc;setInstr(tc==='L'?'←':tc==='R'?'→':tc==='U'?'⟲':'↑',n.name?T('iAt')(n.name,T('act')[tc]||T('act').S):T('iNext')(T('act')[tc]||T('act').S),dist);if((tc==='L'||tc==='R')&&blink!==tc&&g>0&&g<55)hint='hBlink';}
       else if(!hwy&&!ramp)setInstr('↑',T('iFree')+(n.name?' · '+n.name:''),'');
       if(g>0&&g<45){if(mustStop&&!trk.stopped)hint='hStop';else if(st==='r'||st==='y')hint='hRed';}
@@ -48,7 +48,7 @@ function rules(dt){
       if(e.oneway){if(dir<0){owT+=dt;if(owT>1&&!owFlag){owFlag=true;violate('oneway');}}else{owT=0;owFlag=false;}}
       else{const ex=obstZone&&obstZone.e===e&&dir===obstZone.dir&&Math.abs(car.s-obstZone.s)<32;if(lat<-0.6&&!ex&&car.v>0){wrongT+=dt;if(wrongT>1&&!wrongFlag){wrongFlag=true;violate('wrong');}}else{wrongT=0;if(lat>0.2)wrongFlag=false;}}}
     // lanes: bus lane on 中央通り, lane changes there and on the expressway
-    let li=null;if(e.kind==='main')li=lat>3.5+(laneId===1?-0.35:0.35)?1:0;else if(hwy)li=car.u>3.5?2:car.u>0?1:0;else if(ramp&&e!==PAinfo.lot)li=2;
+    let li=null;if(e.kind==='main')li=lat>3.5+(laneId===1?-0.35:0.35)?1:0;else if(hwy)li=car.u>3.5?2:car.u>0?1:0;else if(ramp&&e!==PAinfo.lot)li=2;else if(!e.oneway&&lanesOf(e,dir)>1)li=lat>3.5+(laneId===1?-0.35:0.35)?1:0;
     if(li!=null&&laneId!=null&&li!==laneId&&car.v>2&&Math.abs(fx*car.tx+fz*car.tz)>0.8){const side=li>laneId?'L':'R';if(!(blink===side&&sigHold>1.0))violate('lanesig');else if(hwy||D>60)laneCancel=time+1.7;}
     laneId=li;if(laneCancel&&time>laneCancel){blink=null;laneCancel=0;}
     if(e.kind==='main'){const ok=D<58+n.r||emerg.on||time<emerg.until+7||time<rowEnterT+9;if(li===1&&!ok&&car.v>1){busT+=dt;hint='hBus';if(busT>3.5&&!busFlag){busFlag=true;violate('buslane');}}else{busT=0;if(li===0)busFlag=false;}}
@@ -65,7 +65,8 @@ function rules(dt){
     if(p.inside&&dn>p.n.r+4.4){pending=null;if(e!==p.e&&(e.a===p.n||e.b===p.n)){const tc=turnClass(p.n,p.e,e);
         if(tc==='L'||tc==='R'){const on=p.on[tc];if(on==null)violate('nosig');else if(on<24)violate('latesig');if(blink===tc)blink=null;rowEnterT=time;laneId=null;}
         if(guide){if(p.n===guide.wp[guide.wi]){guide.wi++;gCache.k='';}if(mode==='course'&&p.next&&p.next!=='G'&&p.next!==e)note(T('off'));}}}}
-  if(nav&&guide&&guide.wi>=guide.wp.length-1&&Math.hypot(car.x-guide.wp[guide.wp.length-1].x,car.z-guide.wp[guide.wp.length-1].z)<Math.max(14,guide.wp[guide.wp.length-1].r+4)){note(T('navDone')(nav.name));beep(880,0.25,0.05,'sine');clearNav();}
+  if(nav&&nav.bay){if(Math.hypot(car.x-nav.bay.x,car.z-nav.bay.z)<11&&Math.abs(car.v)<1.5){note(T('navDone')(nav.name));beep(880,0.25,0.05,'sine');clearNav();}}
+  else if(nav&&guide&&guide.wi>=guide.wp.length-1&&Math.hypot(car.x-guide.wp[guide.wp.length-1].x,car.z-guide.wp[guide.wp.length-1].z)<Math.max(14,guide.wp[guide.wp.length-1].r+4)){note(T('navDone')(nav.name));beep(880,0.25,0.05,'sine');clearNav();}
   // --- expressway
   if(hwy||ramp){const nbm=e===PAinfo.nb,s=car.s;let lead=1e9;for(const n of npcs)if(n.e===e&&Math.abs(n.u-car.u)<1.7){const q=(n.s-s)*n.dir-n.hl-2.2;if(q>0&&q<lead)lead=q;}
     if(hwy){env.inTunnel=s>e.tun[0]&&s<e.tun[1];if(env.inTunnel)curLimit=80;
@@ -77,7 +78,7 @@ function rules(dt){
       else ins=[laneId===0?'⬅':'↑',T(laneId===0?'hwBack':'hwEnd'),dist(e.len-s)];
       if(!e.feat.length)setInstr(ins[0],ins[1],ins[2]);
       const free=!(nbm&&s>PAinfo.works[0]-260&&s<PAinfo.works[1]+60);
-      if(s>300&&s<e.len-260&&kmh<50&&lead>50&&car.gear==='D'&&laneId!==2){hwS.slowT+=dt;if(hwS.slowT>7&&!hwS.slowF){hwS.slowF=true;violate('minspeed');}}else{hwS.slowT=0;if(kmh>55)hwS.slowF=false;}
+      if(s>300&&s<e.len-260&&kmh<50&&curLimit>=80&&lead>50&&car.gear==='D'&&laneId!==2){hwS.slowT+=dt;if(hwS.slowT>7&&!hwS.slowF){hwS.slowF=true;violate('minspeed');}}else{hwS.slowT=0;if(kmh>55)hwS.slowF=false;}
       if(car.v>15&&lead<car.v*0.75){hwS.gapT+=dt;hint='hGap';if(hwS.gapT>2.5){hwS.gapT=0;violate('gap');}}else{hwS.gapT=0;if(lead<car.v*2.2&&laneId===1&&free&&!env.inTunnel)hint=hint||'hOvertake';}
       if(laneId===0&&free){hwS.passT+=dt;if(hwS.passT>10&&lead>60)hint='hKeepLeft';if(hwS.passT>24){hwS.passT=0;violate('passlane');}}else hwS.passT=0;
       if(env.inTunnel&&!hwS.was){env.flash=0.62;env.flashCol='#000';}if(!env.inTunnel&&hwS.was&&env.night<0.5){env.flash=0.85;env.flashCol='#fff';}hwS.was=env.inTunnel;

@@ -15,7 +15,7 @@ function TH(x,z){
 /* ---------- map: 若葉市 – 海岸 – 青葉山 – 山手町 ---------- */
 const ND={},ED=[];
 const KIND={main:{w:7,lanes:2,limit:50,dist:'down',walk:1},city:{w:3.5,lanes:1,limit:40,dist:'mid',walk:1},narrow1:{w:2.3,lanes:1,limit:20,oneway:true,dist:'shop'},hill:{w:3,lanes:1,limit:30,dist:'res'},
-  coast:{w:3.5,lanes:1,limit:50,dist:'sea'},mount:{w:3.1,lanes:1,limit:30},rural:{w:3.2,lanes:1,limit:40,dist:'farm'},lane:{w:2.5,lanes:1,limit:30,dist:'farm',quiet:true},
+  coast:{w:3.5,lanes:1,limit:50,dist:'sea'},coast3:{w:5.25,lanes:1,lf:2,lb:1,c:-1.75,limit:50,dist:'sea'},mount:{w:3.1,lanes:1,limit:30},rural:{w:3.2,lanes:1,limit:40,dist:'farm'},lane:{w:2.5,lanes:1,limit:30,dist:'farm',quiet:true},
   tram:{w:6,lanes:1,limit:40,dist:'mid',walk:1,inner:2.5},hw:{w:3.5,lanes:2,limit:100,oneway:true},ramp:{w:2,lanes:1,limit:60,oneway:true,quiet:true}};
 function nd(id,x,z,name,ctrl,stops){ND[id]={id,x,z,name:name||null,ctrl:ctrl||null,stops:stops||[],ed:[],lamps:[]};}
 function ed(a,b,kind,mid,o){const e=Object.assign({i:ED.length,a:ND[a],b:ND[b],kind,mid:mid||[],key:a+'-'+b},KIND[kind],o||{});ED.push(e);ND[a].ed.push(e);ND[b].ed.push(e);return e;}
@@ -36,7 +36,7 @@ ed('S3','A3','city',[[568,-180]]);ed('A3','CM','city');ed('CM','N3','city');ed('
 ed('O1','O3','narrow1');ed('O3','O2','narrow1');ed('O3','CM','narrow1');
 ed('N2','NN','city',[[322,-645]],{dist:'res'});ed('N3','IC1','city',[[552,-660]],{dist:'res'});ed('N4','NE','city',[[786,-635]],{dist:'res'});ed('NN','IC1','city',[[445,-758]],{dist:'res'});ed('IC1','NE','city',[[675,-762]],{dist:'res'});ed('NE','C2','city',[[895,-748]],{dist:'sea'});
 ed('N1','H1','hill',[[10,-585],[-55,-630]]);ed('H1','H2','hill',[[-62,-770],[15,-838]]);ed('H2','NN','hill',[[205,-805],[280,-762]]);
-ed('S5','A5','coast',[[1028,-150]]);ed('A5','C1','coast',[[1034,-370]]);ed('C1','C2','coast',[[1038,-630]]);ed('C2','C3','coast',[[1012,-880]]);
+ed('S5','A5','coast3',[[1028,-150]]);ed('A5','C1','coast3',[[1034,-370]]);ed('C1','C2','coast3',[[1038,-630]]);   // two lanes north, one southed('C2','C3','coast',[[1012,-880]]);
 ed('C3','C4','mount',[[1085,-1085],[1035,-1150],[1075,-1225]]);ed('C4','C5','mount',[[1062,-1390],[1005,-1480],[1060,-1600],[1018,-1750],[1064,-1900],[1026,-2060],[1066,-2220],[1018,-2400]]);ed('C5','V2','rural',[[905,-2680]]);
 ed('IC1','IC0','city',null,{limit:40,dist:null,toll:true});
 ed('IC0','VI','hw',[[548,-960],[600,-1100],[680,-1230],[702,-1450],[690,-1700],[640,-1950],[600,-2200],[640,-2420]],{flat:true});
