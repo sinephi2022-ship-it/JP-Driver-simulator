@@ -9,10 +9,10 @@ function pathS(p){const k=p.ed.indexOf(car.e);return k<0?null:p.cum[k]+car.s;}
 function buildEvents(){
   MAINP=mkPath(['W0-A1','A1-A2','A2-O1','O1-A3','A3-A4','A4-A5']);STP=mkPath(['S0-S1','S1-S2','S2-S3','S3-S4','S4-S5']);
   // broken-down car on 桜通り, westbound lane between 小学校前 and 公園前
-  {const e=EK['N3-N4'],s=e.len*0.55,q=edgePos(e,s,-e.w/2);brokenCar=makeVehicle('car',0x7d8791);brokenCar.G.position.set(q.x,q.y,q.z);brokenCar.G.rotation.y=yawOf(-q.tx,-q.tz);OBST.push({x:q.x,z:q.z,r:1.9});e.closedDir=-1;obstZone={e,s,dir:-1};
+  {const e=EK['N3-N4'],s=e.len*0.55,q=edgePos(e,s,-e.w/2);brokenCar=makeVehicle('car',0x7d8791);brokenCar.G.position.set(q.x,q.y,q.z);brokenCar.G.rotation.y=yawOf(-q.tx,-q.tz);STATB.push(q.x,q.z,-q.tx,-q.tz,2.15,0.85);e.closedDir=-1;obstZone={e,s,dir:-1};
     const t=edgePos(e,s+16,-e.w/2),tri=cv(64,64,c=>{c.beginPath();c.moveTo(32,6);c.lineTo(60,56);c.lineTo(4,56);c.closePath();c.strokeStyle='#e0241b';c.lineWidth=9;c.lineJoin='round';c.stroke();});signPost(tri,0.55,0.55,t.x,t.y+0.1,t.z,-t.tx,-t.tz,0.05,null,true);}
   // school road (東本町 → 小学校前): a parked van, a child runs out from behind it
-  {const e=EK['A4-N4'],s=e.len*0.5,v=edgePos(e,s-8.5,e.w-0.95),van=makeVehicle('van',0xb9bdc2);van.G.position.set(v.x,v.y,v.z);van.G.rotation.y=yawOf(v.tx,v.tz);OBST.push({x:v.x,z:v.z,r:1.7});
+  {const e=EK['A4-N4'],s=e.len*0.5,v=edgePos(e,s-8.5,e.w-0.95),van=makeVehicle('van',0xb9bdc2);van.G.position.set(v.x,v.y,v.z);van.G.rotation.y=yawOf(v.tx,v.tz);STATB.push(v.x,v.z,v.tx,v.tz,2.25,0.9);
     const G=new THREE.Group();G.userData.dyn=true;put(G,new THREE.CylinderGeometry(0.15,0.18,0.75,8),L(0xf2c230),0,0.5,0);put(G,new THREE.SphereGeometry(0.15,10,8),L(0xe8c4a0),0,1.03,0);put(G,new THREE.BoxGeometry(0.3,0.3,0.14),L(0xb3272d),0,0.6,0.16);G.visible=false;scene.add(G);
     const bg=new THREE.Group();bg.userData.dyn=true;put(bg,new THREE.SphereGeometry(0.16,10,8),L(0xe0241b),0,0.2,0);bg.visible=false;scene.add(bg);child={G,ball:bg,e,s,on:false,t:0,cool:0};
     const sc=cv(256,256,c=>{c.translate(128,128);c.rotate(Math.PI/4);c.fillStyle='#f6c400';c.fillRect(-84,-84,168,168);c.strokeStyle='#111';c.lineWidth=7;c.strokeRect(-76,-76,152,152);c.rotate(-Math.PI/4);c.fillStyle='#111';for(const q of[[-22,1.0],[20,0.8]]){c.beginPath();c.arc(q[0],-36*q[1],13*q[1],0,7);c.fill();c.fillRect(q[0]-10*q[1],-22*q[1],20*q[1],46*q[1]);}});
@@ -37,6 +37,16 @@ function buildEvents(){
 function parkGarage(){const e=gar.e,q=edgePos(e,gar.s0,-e.w-5.2),n=gar.n;n.parked=true;n.e=e;n.dir=-1;n.s=gar.s0;n.u=-e.w-5.2;n.v=0;n.x=q.x;n.z=q.z;n.hx=q.tz;n.hz=-q.tx;n.sig=null;n.bez=null;n.next=null;n.mesh.position.set(q.x,q.y,q.z);n.mesh.rotation.y=yawOf(n.hx,n.hz);n.mesh.visible=true;gar.phase=0;}
 function resetEvents(){if(!gar.n)gar.n=addNpc('car',{e:gar.e,dir:-1,s:gar.s0,k:0,vf:0.8,color:0x9c2f2f});parkGarage();gar.cool=0;tram.s=60;tram.dir=1;tram.v=0;tram.dwell=0;tram.done=-1;tram.turnT=0;
   child.on=false;child.G.visible=child.ball.visible=false;child.cool=0;moto.on=false;moto.veh.G.visible=false;moto.cool=0;if(emerg.veh)emerg.veh.G.visible=false;emerg={on:false,until:-99,cool:mode==='free'?40:0,n:emerg.n||0,nodes:MAINP.nodes,near:()=>false};evHint=null;bikeNpc.n.s=STP.cum[1]+30;bikeNpc.n.v=0;}
+// solid obstacles and vehicles near the player, as flat list [x,z,hx,hz,halfLength,halfWidth]
+const SOL=[],STATB=[];                                // STATB: parked vehicles as boxes
+function solids(){SOL.length=0;const add=(x,z,hx,hz,hl,hw)=>{if(Math.abs(x-car.x)+Math.abs(z-car.z)<hl+14)SOL.push(x,z,hx,hz,hl,hw);};
+  for(let i=0;i<STATB.length;i+=6)add(STATB[i],STATB[i+1],STATB[i+2],STATB[i+3],STATB[i+4],STATB[i+5]);
+  for(const n of npcs)if(n.mesh.visible)add(n.x,n.z,n.hx,n.hz,n.hl,n.wid/2);const b=bikeNpc.n;add(b.x,b.z,b.hx,b.hz,0.85,0.3);
+  if(tram.veh)add(tram.x,tram.z,tram.hx||1,tram.hz||0,6.5,1.15);if(moto.on)add(moto.x,moto.z,moto.hx,moto.hz,1,0.35);if(emerg.on)add(emerg.x,emerg.z,emerg.hx,emerg.hz,emerg.veh.hl,emerg.veh.wid/2);return SOL;}
+// how deep the car (three circles along its length) is inside any obstacle at this pose; 0 = clear
+function depthAt(x,z,a,S){const fx=Math.sin(a),fz=-Math.cos(a);let d=0;
+  for(const k of[-1.35,0,1.35]){const px=x+fx*k,pz=z+fz*k;for(const o of OBST){const q=o.r+0.8-Math.hypot(px-o.x,pz-o.z);if(q>d)d=q;}
+    for(let i=0;i<S.length;i+=6){const rx=px-S[i],rz=pz-S[i+1],q=Math.min(S[i+4]+0.8-Math.abs(rx*S[i+2]+rz*S[i+3]),S[i+5]+0.8-Math.abs(rx*S[i+3]-rz*S[i+2]));if(q>d)d=q;}}return d;}
 function hitObst(x,z,a){const fx=Math.sin(a),fz=-Math.cos(a);for(const o of OBST)for(const k of[-1.5,0,1.5])if(Math.hypot(x+fx*k-o.x,z+fz*k-o.z)<o.r+0.75)return true;return false;}
 function hitVehicle(veh,x,z,hx,hz){const rx=car.x-x,rz=car.z-z,al=rx*hx+rz*hz,lt=Math.abs(rx*hz-rz*hx);return Math.abs(al)<veh.hl+1.5&&lt<veh.wid/2+0.8;}
 function pathSignalGap(p,s,hl){ // distance to the next red light on a path
@@ -57,16 +67,15 @@ function updateEvents(dt){
     const ps=pathS(p);if(ps!=null&&car.dir===1&&ps-b.s>1&&ps-b.s<9&&car.u>0.8)vt=Math.min(vt,Math.max(0,car.v-0.5));
     b.v+=clamp(vt-b.v,-5*dt,1.5*dt);b.s+=b.v*dt;if(b.s>p.len-12)b.s=8;const q=pathPos(p,b.s,ee=>ee.w-0.65);b.x=q.x;b.z=q.z;b.hx=q.tx;b.hz=q.tz;b.e=null;b.u=2.85;b.veh.G.position.set(q.x,q.y,q.z);b.veh.G.rotation.y=yawOf(q.tx,q.tz);
     if(drv){const rel=(car.x-b.x)*b.hx+(car.z-b.z)*b.hz,lt=Math.abs((car.x-b.x)*b.hz-(car.z-b.z)*b.hx);if(rel>-28&&rel<3&&lt<4.5&&fx*b.hx+fz*b.hz>0.5)evHint='hBike';
-      if(Math.abs(rel)<2.6&&lt-1.15<0.8&&lt<3&&car.v>b.v+1.5)violate('sidegap');if(invuln<time&&Math.abs(rel)<2.4&&lt<1.0){invuln=time+4;car.v=0;violate('crash');}}}
+      if(Math.abs(rel)<2.6&&lt-1.15<0.8&&lt<3&&car.v>b.v+1.5)violate('sidegap');}}
   // --- motorcycle in the left-rear blind spot on 中央通り before 東本町
   const ms=pathS(MAINP),onMain=ms!=null&&car.dir===1,sA4=MAINP.cum[5];
   if(!moto.on){if(drv&&time>moto.cool&&onMain&&ms>sA4-150&&ms<sA4-120&&car.v>3&&!emerg.on){moto.on=true;moto.s=ms-11;moto.v=car.v;moto.phase=0;moto.flag=false;moto.pu=car.u;moto.cool=mode==='free'?time+90:1e9;moto.veh.G.visible=true;}}
   else{const m=moto,rel=m.s-(ms==null?-999:ms);let vt;if(m.phase===0){vt=clamp(car.v+((ms||0)-5.2-m.s)*1.6,0,17);if(!onMain||ms>sA4-48)m.phase=1;}else vt=Math.max(Math.abs(car.v)+4,10);
     const g=pathSignalGap(MAINP,m.s,1);if(g<40)vt=Math.min(vt,g<0.3?0:Math.sqrt(4.4*g));if(onMain&&car.u>3.3&&rel<-1.5&&rel>-14)vt=Math.min(vt,Math.max(0,car.v-1));
-    const br=vt<m.v-0.05;m.v+=clamp(vt-m.v,-7*dt,3.2*dt);m.s+=m.v*dt;const q=pathPos(MAINP,m.s,6.05);m.veh.G.position.set(q.x,q.y,q.z);m.veh.G.rotation.y=yawOf(q.tx,q.tz);vehLights(m.veh,br,null,flash);
+    const br=vt<m.v-0.05;m.v+=clamp(vt-m.v,-7*dt,3.2*dt);m.s+=m.v*dt;const q=pathPos(MAINP,m.s,6.05);m.x=q.x;m.z=q.z;m.hx=q.tx;m.hz=q.tz;m.veh.G.position.set(q.x,q.y,q.z);m.veh.G.rotation.y=yawOf(q.tx,q.tz);vehLights(m.veh,br,null,flash);
     if(drv&&onMain&&m.phase===0)evHint='hMoto';
     if(drv&&onMain&&!m.flag&&m.pu<=3.4&&car.u>3.4&&rel>-9&&rel<1.5){m.flag=true;violate('makikomi');}m.pu=car.u;
-    if(drv&&invuln<time&&hitVehicle(m.veh,q.x,q.z,q.tx,q.tz)){invuln=time+4;car.v=0;violate('crash');}
     if(m.s>MAINP.len-6){m.on=false;m.veh.G.visible=false;}}
   // --- emergency vehicle coming up from behind on 中央通り
   if(!emerg.on){const sA2=MAINP.cum[2],trig=mode==='course'?(ms>sA2+24&&ms<sA2+44):(time>emerg.cool&&ms>120&&ms<MAINP.len-260);
@@ -74,10 +83,9 @@ function updateEvents(dt){
       emerg.near=n=>{const k=MAINP.ed.indexOf(n.e);if(k<0)return false;const r=MAINP.cum[k]+n.s-emerg.s;return r>-6&&r<95;};emerg.veh.G.visible=true;}}
   else{const em=emerg,rel=(ms==null?-999:ms)-em.s;let vt=16.5;
     if(onMain&&rel>0&&rel<45&&Math.abs(car.u-em.u)<2.1){vt=Math.min(vt,Math.max(Math.abs(car.v),Math.sqrt(6*Math.max(0,rel-9))));if(rel<18){em.block+=dt;if(em.block>3.5){em.ut=-1.75;if(!em.flag){em.flag=true;violate('emerg');}}}}
-    em.u+=clamp(em.ut-em.u,-2*dt,2*dt);em.v+=clamp(vt-em.v,-8*dt,3*dt);em.s+=em.v*dt;const q=pathPos(MAINP,em.s,em.u);em.veh.G.position.set(q.x,q.y,q.z);em.veh.G.rotation.y=yawOf(q.tx,q.tz);vehLights(em.veh,vt<em.v-0.1,null,flash);
+    em.u+=clamp(em.ut-em.u,-2*dt,2*dt);em.v+=clamp(vt-em.v,-8*dt,3*dt);em.s+=em.v*dt;const q=pathPos(MAINP,em.s,em.u);em.x=q.x;em.z=q.z;em.hx=q.tx;em.hz=q.tz;em.veh.G.position.set(q.x,q.y,q.z);em.veh.G.rotation.y=yawOf(q.tx,q.tz);vehLights(em.veh,vt<em.v-0.1,null,flash);
     const dist=Math.hypot(car.x-q.x,car.z-q.z);if(drv&&onMain&&rel>-10&&rel<110)evHint='hEmerg';
     em.sirT-=dt;if(em.sirT<=0){em.sirT=0.55;if(drv&&dist<170)beep(Math.floor(time/0.55)%2?960:770,0.5,0.05*Math.max(0.15,1-dist/170),'sine');}
-    if(drv&&invuln<time&&hitVehicle(em.veh,q.x,q.z,q.tx,q.tz)){invuln=time+4;car.v=0;violate('crash');}
     if(em.s>MAINP.len-4||rel<-160){em.veh.G.visible=false;emerg={on:false,until:time,cool:time+110,n:em.n,nodes:MAINP.nodes,near:()=>false};}}
   vehLights(PAinfo.truck,false,'H',flash);
   // --- car pulling out of a driveway in front of the player
@@ -94,7 +102,7 @@ function updateEvents(dt){
       const end=t.dir>0?p.len-10-t.s:t.s-10;if(end<40)vt=Math.min(vt,end<0.4?0:Math.sqrt(2.4*end));if(end<0.4&&t.v<0.1)t.turnT=7;
       for(let k=0;k<p.ed.length;k++){const n=t.dir>0?p.ed[k].b:p.ed[k].a,ns=t.dir>0?p.cum[k+1]:p.cum[k],g=(ns-t.s)*t.dir-(n.r+2.4)-hl;if(g>-1&&g<50&&n.ctrl==='sig'&&sigState(n,p.ed[k])!=='g')vt=Math.min(vt,g<0.4?0:Math.sqrt(2.4*g));}
       const ps=pathS(p);if(ps!=null&&Math.abs(car.u-t.dir*1.3)<1.7){const g=(ps-t.s)*t.dir-hl-2.4;if(g>-1&&g<26){vt=Math.min(vt,g<1?0:Math.sqrt(2.4*g));if(drv&&g<14&&Math.floor(time*2)%2===0&&t.bell!==Math.floor(time*2)){t.bell=Math.floor(time*2);beep(1250,0.12,0.04,'triangle');}}}}
-    t.v+=clamp(vt-t.v,-2.2*dt,0.9*dt);t.s+=t.dir*t.v*dt;const q=pathPos(p,t.s,t.dir*1.3);t.x=q.x;t.z=q.z;t.e=q.e;t.es=q.es;t.veh.G.position.set(q.x,q.y,q.z);t.veh.G.rotation.y=yawOf(q.tx*t.dir,q.tz*t.dir);vehLights(t.veh,t.v<0.3,null,flash);
+    t.v+=clamp(vt-t.v,-2.2*dt,0.9*dt);t.s+=t.dir*t.v*dt;const q=pathPos(p,t.s,t.dir*1.3);t.x=q.x;t.z=q.z;t.hx=q.tx*t.dir;t.hz=q.tz*t.dir;t.e=q.e;t.es=q.es;t.veh.G.position.set(q.x,q.y,q.z);t.veh.G.rotation.y=yawOf(q.tx*t.dir,q.tz*t.dir);vehLights(t.veh,t.v<0.3,null,flash);
     // passengers walk between the pavement and the tram at the stop without an island
     const boarding=t.dwell>0&&t.stop===1;t.pax.forEach((G,k)=>{G.visible=boarding;if(boarding){const ph=clamp((11-t.dwell-1-k*1.2)/4,0,1),W=t.e.w,u=t.dir*lerp(W+1.4,2.7,k===1?1-ph:ph),a=pathPos(p,t.s+(k-1)*2.6,u);G.position.set(a.x,a.y+0.08,a.z);G.rotation.y=yawOf(a.tz,-a.tx);G.umb.visible=env.weather!=='clear';
         if(drv&&invuln<time&&Math.abs(u)<W-0.6&&Math.hypot(car.x+fx*1.3-a.x,car.z+fz*1.3-a.z)<1.3&&Math.abs(car.v)>0.4){invuln=time+4;car.v=0;violate('hitped');}}});
@@ -102,5 +110,5 @@ function updateEvents(dt){
       if(t.dwell>0&&t.stop===1){if(rel<-hl&&rel>-hl-45)evHint='hTramStop';if(t.prel!=null&&t.prel<=-hl-1.5&&rel>-hl-1.5&&car.v>0.5)violate('tramstop');}
       else if(t.dwell>0&&t.stop===0){if(rel<hl+3&&rel>-hl-40)evHint='hTramIsland';if(Math.abs(rel)<hl+3&&Math.abs(car.v)*3.6>17)violate('tramslow');}
       t.prel=rel;}else t.prel=null;
-    if(drv&&invuln<time&&hitVehicle(t.veh,t.x,t.z,q.tx*t.dir,q.tz*t.dir)){invuln=time+4;car.v=0;violate('crash');}}
+}
 }

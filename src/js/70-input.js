@@ -51,18 +51,23 @@ document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{$({course:'mo
 gb.addEventListener('pointerdown',e=>{e.preventDefault();if(state!=='drive')return;gid=e.pointerId;gy=e.clientY;strip.hidden=false;try{gb.setPointerCapture(gid);}catch(_){}});
 gb.addEventListener('pointermove',e=>{if(e.pointerId!==gid)return;while(e.clientY-gy>30){shiftGear(1,false);gy+=30;}while(e.clientY-gy<-30){shiftGear(-1,false);gy-=30;}});
 const up=e=>{if(e.pointerId===gid){gid=null;strip.hidden=true;}};gb.addEventListener('pointerup',up);gb.addEventListener('pointercancel',up);gb.addEventListener('contextmenu',e=>e.preventDefault());}
-$('lightBtn').onclick=toggleLights;$('hbBtn').onclick=()=>{if(state==='drive')toggleHb();};
+$('lightBtn').onclick=toggleLights;const press=(id,fn)=>{const el=$(id);el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(state==='drive')fn();});el.addEventListener('contextmenu',e=>e.preventDefault());};
+press('hbBtn',toggleHb);press('tbL',()=>{toggleBlink('L');buzz();});press('tbR',()=>{toggleBlink('R');buzz();});
 stick('stR',(x,y)=>{inp.steerA=dz(x,0.14);inp.gas=Math.max(0,dz(-y,0.18));inp.brake=Math.max(0,dz(y,0.18));},()=>{camMode=1-camMode;});}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true);});
 $('hb').onclick=toggleHb;$('bL').onclick=()=>toggleBlink('L');$('bR').onclick=()=>toggleBlink('R');$('gear').onclick=toggleGear;
 $('camBtn').onclick=()=>{camMode=1-camMode;};$('sndBtn').onclick=$('pSnd').onclick=()=>{soundOn=!soundOn;applyLang();};$('pEnd').onclick=()=>{if(state==='pause'){$('pause').hidden=true;state='drive';finish();}};
 $('endBtn').onclick=()=>{if(state==='drive')finish();};$('pauseBtn').onclick=()=>setPause(true);$('resumeBtn').onclick=()=>setPause(false);$('pRestart').onclick=()=>{$('pause').hidden=true;begin();};$('pMenu').onclick=()=>{$('pause').hidden=true;$('hud').hidden=true;resetGame();state='menu';$('start').hidden=false;};
+function goFull(on){const d=document,el=d.documentElement;try{if(on===false||(on==null&&(d.fullscreenElement||d.webkitFullscreenElement))){(d.exitFullscreen||d.webkitExitFullscreen).call(d);return;}
+    const r=(el.requestFullscreen||el.webkitRequestFullscreen);if(!r){note(T('fsNo'));return;}const pr=r.call(el,{navigationUI:'hide'});if(pr&&pr.then)pr.then(()=>{try{screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}).catch(()=>{if(on==null)note(T('fsNo'));});}catch(e){if(on==null)note(T('fsNo'));}}
+$('fsBtn').onclick=()=>goFull();
 function toggleLights(){env.lights=!env.lights;beep(700,0.03,0.03);}
 function begin(){
   mode=$('modeFree').checked?'free':$('modeHw').checked?'hw':'course';hintsOn=$('hintsOn').checked;
   setEnv(document.querySelector('input[name=tod]:checked').value,document.querySelector('input[name=wx]:checked').value);resetGame();for(const k in inp)inp[k]=0;
   try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume();}catch(e){}
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});}catch(e){}
+  if(TOUCH&&!document.fullscreenElement)goFull(true);
   if(TOUCH&&window.innerHeight>window.innerWidth)setTimeout(()=>note(T('rotate')),400);
   $('start').hidden=true;$('result').hidden=true;$('hud').hidden=false;lastHint=null;$('hint').hidden=true;state='drive';canvas.focus&&canvas.focus();
 }

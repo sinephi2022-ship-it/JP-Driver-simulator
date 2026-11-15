@@ -90,11 +90,12 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
 #gearBtn{width:70px;height:70px;border-radius:16px;background:var(--panel);border:2px solid var(--go);font:700 32px/1 var(--f-num);touch-action:none;display:grid;place-items:center;position:relative}
 #gearBtn.rev{border-color:var(--amber);color:var(--amber)}
 #gearBtn i{position:absolute;right:6px;top:5px;font:400 12px/1 sans-serif;color:var(--muted)}
-#hbBtn{width:70px;height:46px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font:700 14px/1 var(--f-display)}
+#hbBtn{touch-action:none;width:70px;height:46px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font:700 14px/1 var(--f-display)}
 #hbBtn.on{background:var(--sign-red);border-color:var(--sign-red);color:#fff}
 #gearStrip{position:absolute;bottom:100%;left:0;margin-bottom:8px;width:70px;display:grid;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 #gearStrip span{height:36px;display:grid;place-items:center;font:700 20px/1 var(--f-num);color:var(--muted)}
 #gearStrip span.on{background:var(--go);color:#06241b}
+.bcol{display:flex;gap:10px;pointer-events:auto;align-self:flex-end}.bcol .blk{width:58px;height:58px;background:var(--panel);touch-action:none}
 .scol{display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:auto}
 .tspd{display:none;text-align:center;min-width:46px}.tspd b{font:700 30px/1 var(--f-num);font-variant-numeric:tabular-nums;display:block}.tspd b.over{color:var(--sign-red)}.tspd small{font-size:10px;color:var(--muted)}
 .stick{width:132px;height:132px;border-radius:50%;background:var(--panel);border:1px solid var(--line);position:relative;touch-action:none}
@@ -190,6 +191,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
       <div class="side">
         <canvas id="map" width="300" height="230"></canvas>
         <div class="row" style="gap:6px;justify-content:flex-end">
+          <button class="mini" id="fsBtn" type="button" data-t="fsBtn"></button>
           <button class="mini" id="mapBtn" type="button" data-t="mapBtn"></button>
           <button class="mini" id="lightBtn" type="button"></button>
           <button class="mini" id="sndBtn" type="button"></button>
@@ -215,6 +217,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
         <button id="gearBtn" type="button" aria-label="gear"><b id="gearLbl">P</b><i>↕</i></button>
         <button id="hbBtn" type="button" data-t="hbLbl"></button>
       </div>
+      <div class="bcol"><button class="blk" id="tbL" type="button" aria-label="left signal">◀</button><button class="blk" id="tbR" type="button" aria-label="right signal">▶</button></div>
       <div style="flex:1"></div>
       <div class="scol"><div class="stick" id="stR"><span class="u" data-t="gas"></span><span class="d" data-t="brake"></span><span class="lft">⇦</span><span class="rgt">⇨</span><div class="nub"></div></div><div class="cap" data-t="capR"></div></div>
     </div>
@@ -257,6 +260,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
         <li><kbd>MOUSE</kbd> <span data-t="kDrag"></span></li>
       </ul>
       <p class="note touchOnly" data-t="tHelp"></p>
+      <p class="note touchOnly" data-t="fsHelp"></p>
       <p class="note" data-t="creep"></p>
       <div class="row"><button class="cta" id="startBtn" type="button" data-t="start"></button></div>
     </div>
@@ -360,16 +364,18 @@ Object.assign(TX.ja.r,{lanesig:['進路変更合図なし','進路変更の合�
  nolight:['無灯火','夜間・トンネル内でライトを点けていません。'],etc:['ETCレーン速度超過','ETCレーンを20km/h超で通過しました。'],minspeed:['最低速度違反','高速道路本線で50km/h未満で走行しました。'],gap:['車間距離不保持','高速道路で車間距離が不足しています。'],passlane:['通行帯違反（追越車線）','追越車線を走り続けました。']});
 Object.assign(TX.zh,{mFree:'自由行驶 / 导航',mFreeD:'随意练习；点小地图打开大地图，点一个路口或高速入口，系统会规划路线并一路提示。',mapBtn:'地图',mapTitle:'点一个路口或高速入口设为目的地',mapRO:'导航只在「自由行驶 / 导航」模式下可用',navClear:'取消导航',close:'关闭',navNear:n=>'目的地「'+n+'」就在前方路口',navDone:n=>'已到达「'+n+'」',navSet:n=>'已设定目的地：'+n,navIC:'直行进入高速 若葉IC',
  kMap:'打开地图 / 设定目的地',kWiper:'雨刷',stkR:'灯光',stkL:'雨刷',capR:'左右打方向 · 上油门 下刹车 · 双击换视角',modeTo:'切换模式（重新开始）',hWiper:'下雨 / 下雪：打开雨刷（K ／ 左拨杆）',
- tHelp:'触屏操作：右下轮盘左右打方向、上推油门、下拉刹车；方向盘右边的拨杆点一下开关车灯、上下拨打转向灯，左边的拨杆开关雨刷；左下角按住挡位钮上下滑动换挡，下面是手刹；点小地图打开大地图；在画面其它地方滑动可以转头。建议横屏。'});
+ tHelp:'触屏操作：右下轮盘左右打方向、上推油门、下拉刹车；左下的 ◀ ▶ 是转向灯；方向盘右边的拨杆点一下开关车灯（上下拨也能打转向灯），左边的拨杆开关雨刷；左下角按住挡位钮上下滑动换挡，下面是手刹；点小地图打开大地图；在画面其它地方滑动可以转头。建议横屏。'});
 Object.assign(TX.ja,{mFree:'自由走行 / ナビ',mFreeD:'自由に練習。ミニマップをタップして地図を開き、交差点や高速入口を選ぶとルート案内が始まります。',mapBtn:'地図',mapTitle:'交差点または高速入口をタップして目的地に設定',mapRO:'ナビは「自由走行 / ナビ」モードのみ',navClear:'案内中止',close:'閉じる',navNear:n=>'目的地「'+n+'」はこの先の交差点です',navDone:n=>'「'+n+'」に到着しました',navSet:n=>'目的地を設定：'+n,navIC:'直進して 高速 若葉IC へ',
  kMap:'地図を開く / 目的地設定',kWiper:'ワイパー',stkR:'ライト',stkL:'ワイパー',capR:'左右でハンドル · 上アクセル 下ブレーキ · ダブルタップで視点',modeTo:'モード切替（最初から）',hWiper:'雨・雪：ワイパーを作動（K ／ 左レバー）',
- tHelp:'タッチ操作：右下のパッドは左右でハンドル、上でアクセル、下でブレーキ。ハンドル右のレバーはタップでライト、上下でウインカー。左のレバーでワイパー。左下のシフトボタンを押したまま上下でシフト、その下がサイドブレーキ。ミニマップをタップで地図。画面スワイプで視点移動。横向き推奨。'});
+ tHelp:'タッチ操作：右下のパッドは左右でハンドル、上でアクセル、下でブレーキ。左下の ◀ ▶ がウインカー。ハンドル右のレバーはタップでライト（上下でもウインカー）。左のレバーでワイパー。左下のシフトボタンを押したまま上下でシフト、その下がサイドブレーキ。ミニマップをタップで地図。画面スワイプで視点移動。横向き推奨。'});
 Object.assign(TX.zh,{iNext:a=>'下一个路口 '+a,iFollow:'沿道路前进',iU:'前面没有路了，请掉头',mCourseD:'从駅西口出发，按指示穿过市区回到桜町，途中有各种事件。减点方式评分，70 分以上合格。',mHwD:'若葉IC → 青葉隧道 → 青葉PA（减速车道与汇入）→ 施工变道 → 山手出口 → 道の駅。',
  mapTitle:'点一个地点设为目的地，系统会规划路线',hwTunnelAhead:'前方 青葉隧道',hwPA:'前方 青葉PA：打左灯进入减速车道',hwPAin:'青葉PA：可停车休息，再从加速车道汇入',hwEnd:'前方出口・收费站',hPA:'PA 内限速 20；离开时先看本线车流',hUp:'上坡：提前给油，停车后起步注意溜车',hDown:'下坡：松油门控制车速，不要一直踩刹车',navIC:'直行进入高速'});
 Object.assign(TX.zh.r,{oneway:['通行禁止違反（逆走）','逆向驶入了单行道。注意蓝底白箭头和红色禁止驶入标志。']});
 Object.assign(TX.ja,{iNext:a=>'次の交差点を'+a+'してください',iFollow:'道なりに進んでください',iU:'この先行き止まりです。Uターンしてください',mCourseD:'駅西口を出発し、指示に従って市内を走り桜町へ。途中でさまざまなイベントが起こります。減点方式、70点以上で合格。',mHwD:'若葉IC → 青葉トンネル → 青葉PA（減速車線・合流）→ 工事規制 → 山手出口 → 道の駅。',
  mapTitle:'行き先をタップするとルートを案内します',hwTunnelAhead:'この先 青葉トンネル',hwPA:'この先 青葉PA：左合図で減速車線へ',hwPAin:'青葉PA：休憩後、加速車線から本線へ合流',hwEnd:'この先 出口・料金所',hPA:'PA内は20km/h。出るときは本線の流れを確認',hUp:'上り坂：早めにアクセル。坂道発進は後退に注意',hDown:'下り坂：アクセルを戻して速度を抑える。ブレーキの踏み続けに注意',navIC:'直進して高速へ'});
 Object.assign(TX.ja.r,{oneway:['通行禁止違反（逆走）','一方通行を逆走しました。']});
+Object.assign(TX.zh,{fsBtn:'全屏',fsNo:'这个浏览器不允许网页全屏。可以用浏览器菜单里的“添加到主屏幕”，从主屏幕图标打开就没有地址栏了。',fsHelp:'想去掉地址栏：点“开始驾驶”会自动尝试全屏；iPhone 请用 Safari 的“分享 → 添加到主屏幕”，再从主屏幕图标打开。'});
+Object.assign(TX.ja,{fsBtn:'全画面',fsNo:'このブラウザは全画面表示を許可していません。「ホーム画面に追加」してアイコンから開くとアドレスバーが消えます。',fsHelp:'アドレスバーを消すには：「運転開始」で自動的に全画面を試みます。iPhone は Safari の「共有 → ホーム画面に追加」から開いてください。'});
 Object.assign(TX.zh,{hTrack:'不要在电车轨道上持续行驶（右转前和避让时除外）',hTramStop:'电车停靠、没有安全地带、有人上下车：在电车后方停车等待',hTramIsland:'电车停靠、有安全地带：徐行通过',hGarage:'路边有车要驶出：减速，准备让行'});
 Object.assign(TX.zh.r,{trackbed:['軌道敷内通行','在路面电车的轨道内持续行驶。'],tramstop:['乗降客妨害（路面電車）','没有安全地带的电车站有人上下车时，必须在电车后方停车等待。'],tramslow:['徐行違反（安全地帯）','电车停靠在有安全地带的车站时，要徐行通过。']});
 Object.assign(TX.ja,{hTrack:'軌道敷内を走り続けない（右折・やむを得ない場合を除く）',hTramStop:'路面電車が停車中・安全地帯なし・乗降客あり：後方で停止して待つ',hTramIsland:'路面電車が停車中・安全地帯あり：徐行して通過',hGarage:'路外から車が出てきます：減速して進路を譲る準備を'});
@@ -397,7 +403,7 @@ const KIND={main:{w:7,lanes:2,limit:50,dist:'down',walk:1},city:{w:3.5,lanes:1,l
   tram:{w:6,lanes:1,limit:40,dist:'mid',walk:1,inner:2.5},hw:{w:3.5,lanes:2,limit:100,oneway:true},ramp:{w:2,lanes:1,limit:60,oneway:true,quiet:true}};
 function nd(id,x,z,name,ctrl,stops){ND[id]={id,x,z,name:name||null,ctrl:ctrl||null,stops:stops||[],ed:[],lamps:[]};}
 function ed(a,b,kind,mid,o){const e=Object.assign({i:ED.length,a:ND[a],b:ND[b],kind,mid:mid||[],key:a+'-'+b},KIND[kind],o||{});ED.push(e);ND[a].ed.push(e);ND[b].ed.push(e);return e;}
-nd('S0',-110,-82);nd('S1',120,-80,'駅西口','stop',['S0-S1','S1-S2']);nd('S2',340,-70,'駅前','sig');nd('S3',570,-60,'南町','sig');nd('S4',800,-52,'港入口','stop',['S3-S4','S4-S5']);nd('S5',1012,-48,'港','stop',['S4-S5']);nd('SS',346,95);
+nd('S0',-110,-82,'駅西','stop',['S0-S1']);nd('S1',120,-80,'駅西口','stop',['S0-S1','S1-S2']);nd('S2',340,-70,'駅前','sig');nd('S3',570,-60,'南町','sig');nd('S4',800,-52,'港入口','stop',['S3-S4','S4-S5']);nd('S5',1012,-48,'港','stop',['S4-S5','SS-S5']);nd('SS',346,95,'駅南','stop',['S2-SS']);
 nd('W0',-130,-296);nd('A1',100,-300,'西本町','sig');nd('A2',330,-310,'本町','sig');nd('O1',445,-306,'商店街');nd('A3',560,-300,'市役所前','sig');nd('A4',790,-280,'東本町','sig');nd('A5',1002,-250,'海岸通り','sig');
 nd('N1',90,-540,'緑ヶ丘','sig');nd('N2',320,-560,'桜町','sig');nd('O2',441,-556,null,'stop',['O3-O2']);nd('N3',550,-550,'公園前','sig');nd('N4',780,-530,'小学校前','stop',['A4-N4','N4-NE']);
 nd('O3',443,-430);nd('CM',556,-425,null,'stop',['O3-CM']);
@@ -407,6 +413,7 @@ nd('C1',1040,-500,'海水浴場');nd('C2',1000,-750,'北浜海岸','stop',['NE-C
 nd('VI',660,-2570);nd('V3',640,-2650,'山手IC入口','stop',['VI-V3']);nd('V1',480,-2760,'役場前');nd('V2',790,-2750,'道の駅','stop',['V5-V2']);nd('V4',400,-2980,'山手温泉');nd('V5',700,-3010,'棚田');
 ed('W0','A1','main');ed('A1','A2','main',[[215,-300]]);ed('A2','O1','main');ed('O1','A3','main');ed('A3','A4','main',[[675,-296]]);ed('A4','A5','main',[[900,-262]]);
 ed('S0','S1','city');ed('S1','S2','tram',[[230,-80]]);ed('S2','S3','tram',[[455,-62]]);ed('S3','S4','tram',[[685,-60]]);ed('S4','S5','city',[[905,-46]]);ed('S2','SS','city',[[348,10]],{limit:30});
+ed('W0','S0','city',[[-152,-190]],{dist:'res'});ed('S0','SS','city',[[-92,32],[120,102]],{dist:'res'});ed('SS','S5','city',[[620,114],[905,98],[990,38]],{dist:'sea'});   // outer ring: no dead ends
 ed('N1','N2','city',[[205,-556]],{dist:'res'});ed('N2','O2','city',null,{dist:'res'});ed('O2','N3','city',null,{dist:'res'});ed('N3','N4','city',[[665,-546]],{dist:'res'});
 ed('S1','A1','city',[[104,-190]]);ed('A1','N1','city',[[88,-420]],{dist:'res'});ed('S2','A2','city',[[338,-190]]);ed('A2','N2','city',[[322,-435]]);
 ed('S3','A3','city',[[568,-180]]);ed('A3','CM','city');ed('CM','N3','city');ed('S4','A4','city',[[798,-165]]);ed('A4','N4','city',[[788,-405]],{limit:30,dist:'res',school:true});
@@ -422,7 +429,7 @@ ed('V3','V1','rural',[[560,-2712]]);ed('V3','V2','rural',[[720,-2702]]);ed('V1',
 const EK={};                                           // edges by key, filled in buildNet
 const PLACES=[                                         // destinations: name, node, position of the building
   ['若葉駅','S2',340,-28],['市役所','A3',596,-338],['ワカバモール','A4',838,-322],['若葉小学校','N4',826,-490],['若葉団地','H1',-118,-712],['若葉寺','H2',96,-868],['中央公園','N3',500,-490],
-  ['若葉港','S5',1052,-18],['海水浴場','C1',1085,-505],['岬の灯台','C3',1104,-1012],['青葉峠 展望台','C4',968,-1302],['高速 若葉IC','IC0',600,-812],['道の駅 山手','V2',832,-2782],['山手町役場','V1',440,-2735],['山手温泉','V4',352,-3002],['棚田','V5',705,-3055]];
+  ['若葉港','S5',1068,-16],['海水浴場','C1',1085,-505],['岬の灯台','C3',1104,-1012],['青葉峠 展望台','C4',968,-1302],['高速 若葉IC','IC0',600,-812],['道の駅 山手','V2',832,-2782],['山手町役場','V1',440,-2735],['山手温泉','V4',352,-3002],['棚田','V5',705,-3055]];
 const COURSE=['S1','S2','A2','A3','A4','N4','N3','N2'];  // 検定コース: waypoints, the goal bay is after the last one
 let nav=null;
 function sigState(n,e){if(emerg.on&&emerg.nodes.has(n)){return e.kind==='main'?'g':'r';}const t=(time+n.off)%32,ph=n.phase[e.i];return ph===0?(t<12?'g':t<15?'y':'r'):(t<16?'r':t<28?'g':t<31?'y':'r');}
@@ -609,6 +616,17 @@ function buildWorld(){
         if(e.kind==='main'){const b=edgePos(e,e.a===n?D+60:e.len-D-60,0);if(e.len>150)ground(busRoad,2.1,8.5,b.x+lx*5.25,b.y+0.11,b.z+lz*5.25,yaw);}}
       if(e.oneway&&e.kind==='narrow1'){const o=edgePos(e,e.len-n.r-1,0);for(const sd of[-1,1])signPost(noEntry,0.8,0.8,o.x+o.tz*sd*(e.w+0.7),o.y,o.z-o.tx*sd*(e.w+0.7),-o.tx,-o.tz,2.2,backRound);}
     }}
+  // direction boards before the signalled junctions
+  const dest=(n,f)=>{let m=f.a===n?f.b:f.a,pv=f;for(let q=0;q<8;q++){if(m.id==='IC0'||m.id==='VI'||pv.kind==='hw')return'高速';if(m.name)return m.name;if(m.ed.length!==2)break;pv=m.ed[0]===pv?m.ed[1]:m.ed[0];m=pv.a===m?pv.b:pv.a;}return m.name||'';};
+  for(const k in ND){const n=ND[k];if(n.ctrl!=='sig'||n.ed.length<3)continue;for(const e of n.ed){if(e.oneway&&e.b!==n||e.len<n.r+70)continue;const d={};for(const f of n.ed){if(f===e||f.oneway&&f.b===n)continue;const tc=turnClass(n,e,f);if(tc!=='U'&&!d[tc])d[tc]=dest(n,f);}
+      const t=boardTex(360,220,'#1c4c9c',c=>{c.strokeStyle='#fff';c.lineWidth=13;c.beginPath();if(d.S){c.moveTo(180,206);c.lineTo(180,82);}else{c.moveTo(180,206);c.lineTo(180,150);}if(d.L){c.moveTo(74,150);c.lineTo(186,150);}if(d.R){c.moveTo(174,150);c.lineTo(286,150);}c.stroke();
+        const head=(x,y,dx,dy)=>{c.beginPath();c.moveTo(x+dx*22,y+dy*22);c.lineTo(x-dy*17,y+dx*17);c.lineTo(x+dy*17,y-dx*17);c.closePath();c.fill();};if(d.S)head(180,82,0,-1);if(d.L)head(74,150,-1,0);if(d.R)head(286,150,1,0);
+        const txt=(s,x,y)=>{if(!s)return;c.font='900 '+(s.length>4?22:28)+'px '+FONT;if(s==='高速'){c.fillStyle='#0f7a4a';c.fillRect(x-36,y-17,72,34);c.fillStyle='#fff';}c.fillText(s,x,y);};txt(d.S,180,36);txt(d.L,82,108);txt(d.R,278,108);});
+      const aw=away(n,e),tx=-aw[0],tz=-aw[1],D=n.r+42,q=edgePos(e,e.a===n?D:e.len-D,0),off=e.w+(e.walk?3.3:1.6);signPost(t,3.1,1.9,q.x+tz*off,q.y,q.z-tx*off,tx,tz,4.2);}}
+  // bus stops on 中央通り (the buses pull in and wait here)
+  {const st=boardTex(128,128,'#1c4c9c',c=>{c.font='900 34px '+FONT;c.fillText('バス',64,44);c.fillText('のりば',64,86);}),sh=L(0x8fa1ad);
+    for(const key of['A1-A2','A3-A4'])for(const dir of[1,-1]){const e=EK[key],s=e.len*(dir>0?0.45:0.55);e.feat.push({t:'bus',s,dir});const q=edgePos(e,s+dir*5,dir*(e.w+1.2)),G=new THREE.Group();signPost(st,0.7,0.7,q.x,q.y+0.2,q.z,q.tx*dir,q.tz*dir,2.3);
+      const a=edgePos(e,s-dir*2,dir*(e.w+2.0));G.position.set(a.x,a.y+0.2,a.z);G.rotation.y=yawOf(a.tx,a.tz);scene.add(G);box(sh,1.5,0.12,4.4,0,2.5,0,G);for(const z of[-2,2])box(poleMat,0.08,2.4,0.08,dir*0.6,1.25,z,G);}}
   // speed limit signs a little after each junction, both directions
   for(const e of ED){if(e.kind==='hw'||e.kind==='ramp'||e.len<70)continue;for(const d of e.oneway?[1]:[1,-1]){const n0=d>0?e.a:e.b,q=edgePos(e,d>0?n0.r+15:e.len-n0.r-15,0),tx=q.tx*d,tz=q.tz*d;signPost(roundSignTex(e.limit),0.85,0.85,q.x+tz*(e.w+(e.walk?1.0:0.8)),q.y,q.z-tx*(e.w+(e.walk?1.0:0.8)),tx,tz,2.3,backRound);}}
   // --- pedestrian crossing in the middle of 駅前通り (S1–S2)
@@ -992,7 +1010,8 @@ function drive(dt){
   car.steer+=clamp(target-car.steer,-rate,rate);car.steer=clamp(car.steer,-maxS,maxS);
   car.a+=car.v/2.6*Math.tan(car.steer)*dt;
   const nx=car.x+Math.sin(car.a)*car.v*dt,nz=car.z-Math.cos(car.a)*car.v*dt;
-  if(hitObst(nx,nz,car.a)){if(Math.abs(car.v)>1.2&&invuln<time){invuln=time+3;violate('crash');}car.v=0;}
+  const S=solids(),d1=depthAt(nx,nz,car.a,S);
+  if(d1>0&&d1>depthAt(car.x,car.z,car.a,S)+0.001){if(Math.abs(car.v)>1.2&&invuln<time){invuln=time+3;violate('crash');}car.v=0;}   // solid: cannot push further in, but can always back out
   else if(onRoad(nx,nz)){car.x=nx;car.z=nz;}
   else{if(onRoad(nx,car.z))car.x=nx;else if(onRoad(car.x,nz))car.z=nz;car.v*=Math.pow(0.05,dt);if(Math.abs(car.v)>0.8)violate('curb');}
   locatePlayer(dt);
@@ -1024,7 +1043,7 @@ function laneU(e,dir,k){const inner=e.inner||0,lw=(e.w-inner)/e.lanes;return e.o
 function placeNpc(n){const q=edgePos(n.e,n.s,n.u);n.x=q.x;n.z=q.z;n.y=q.y;n.hx=q.tx*n.dir;n.hz=q.tz*n.dir;n.mesh.position.set(q.x,q.y,q.z);n.mesh.rotation.y=yawOf(n.hx,n.hz);}
 function addNpc(kind,o){const veh=makeVehicle(kind,o.color!=null?o.color:VEH_COL[npcs.length%VEH_COL.length]);veh.G.rotation.order='YXZ';
   const n=Object.assign({kind,veh,mesh:veh.G,len:veh.len,hl:veh.hl,wid:veh.wid,v:0,k:0},o);n.init={e:n.e,dir:n.dir,s:n.s,k:n.k};npcs.push(n);resetNpc(n);return n;}
-function resetNpc(n){Object.assign(n,n.init);n.u=n.ut=laneU(n.e,n.dir,n.k);n.v=n.e.kind==='hw'?(n.vmaxF||20)*0.9:0;n.next=null;n.bez=null;n.wait=0;n.cleared=null;n.sig=null;n.brake=false;n.ovT=0;placeNpc(n);}
+function resetNpc(n){Object.assign(n,n.init);n.u=n.ut=laneU(n.e,n.dir,n.k);n.v=n.e.kind==='hw'?(n.vmaxF||20)*0.9:0;n.next=null;n.bez=null;n.wait=0;n.cleared=null;n.sig=null;n.brake=false;n.ovT=0;n.served=null;n.dwell=0;n.sigT=0;placeNpc(n);}
 const drivable=e=>!e.quiet&&e.kind!=='ramp';
 function spawnTraffic(R){
   const pool=ED.filter(e=>drivable(e)&&e.kind!=='hw'&&e.len>70&&!e.toll);let c=0;
@@ -1044,7 +1063,7 @@ function laneFree(n,u,back,front){for(const o of npcs)if(o!==n&&o.e===n.e&&!o.be
   if(car.e===n.e&&Math.abs(car.u-u)<2.2){const rel=(car.s-n.s)*n.dir;if(rel>-back-6&&rel<front+4)return false;}return true;}
 function updateTraffic(dt){
   ped.npcThreat=false;const flash=Math.floor(time*2.7)%2===0,active=state!=='menu';
-  for(const n of npcs){if(n.parked){vehLights(n.veh,false,n.sig,flash);if(state==='drive'&&invuln<time&&hitVehicle(n.veh,n.x,n.z,n.hx,n.hz)){invuln=time+4;car.v=0;violate('crash');}continue;}
+  for(const n of npcs){if(n.parked){vehLights(n.veh,false,n.sig,flash);continue;}
     const e=n.e,hwy=e.kind==='hw',lim=(n.vmaxF||e.limit/3.6*(n.vf||0.85))*env.npcCap;
     // far from the player: keep moving cheaply, skip the detailed logic for most frames
     const pd=Math.abs(n.x-car.x)+Math.abs(n.z-car.z);n.mesh.visible=pd<420;
@@ -1060,6 +1079,8 @@ function updateTraffic(dt){
         else if(n.next&&n.next.dead&&D<30)cap=Math.min(cap,5);}
       else if(D<1.5){const f=node.ed[0]===e?node.ed[1]:node.ed[0],fd=f.a===node?1:-1;if(f.oneway&&fd<0||!drivable(f)&&!f.toll)n.next={dead:true};else{n.e=f;n.dir=fd;n.s=fd>0?0.01:f.len-0.01;n.k=Math.min(n.k,f.lanes-1);n.u=n.ut=laneU(f,fd,n.k);continue;}}
       if(tram.dwell>0&&tram.stop===1&&e===tram.e&&n.dir===tram.dir){const rel=(tram.es-n.s)*n.dir-tram.veh.hl-n.hl-2.5;if(rel>-1)g=Math.min(g,rel);}
+      if(n.kind==='bus')for(const f of e.feat)if(f.t==='bus'&&f.dir===n.dir&&n.served!==f){const rel=(f.s-n.s)*n.dir-n.hl;if(rel<-1)continue;g=Math.min(g,rel);if(rel<32)sig='L';if(n.v<0.1&&rel<1.3){sig='H';n.dwell=(n.dwell||0)+dt;if(n.dwell>5.5){n.served=f;n.dwell=0;n.sigT=time+3.5;}}}
+      if(n.sigT>time)sig='R';
       for(const f of e.feat){const rel=(f.s-n.s)*n.dir-n.hl;if(f.t==='rail'&&rail.alarm&&rel-4.5>-1)g=Math.min(g,rel-4.5);if(f.t==='xwalk'&&ped.state!=='away'&&rel-3.5>-1){g=Math.min(g,rel-3.5);if(rel<30&&n.v>0.4)ped.npcThreat=true;}if(f.t==='toll'&&rel>0&&rel<25)cap=Math.min(cap,5.5);}
     }
     // vehicle ahead: same lane by distance along the road, and anything in the box straight ahead
@@ -1089,7 +1110,7 @@ function updateTraffic(dt){
           n.bez={e:f,dir:nx.dir,s:s2,u:u2,tc:nx.tc,t:0,x0:p0.x,z0:p0.z,y0:p0.y,x2:p2.x,z2:p2.z,y2:p2.y,cx:(p0.x+p0.tx*n.dir*h+p2.x-p2.tx*nx.dir*h)/2,cz:(p0.z+p0.tz*n.dir*h+p2.z-p2.tz*nx.dir*h)/2,len:Math.max(3,Math.hypot(p2.x-p0.x,p2.z-p0.z)*1.08)};n.k=k;n.ut=u2;}}
       else placeNpc(n);}
     if(n.mesh.visible)vehLights(n.veh,n.brake,n.sig,flash);
-    if(active&&state==='drive'&&invuln<time&&Math.abs(along)<n.hl+1.35&&lat<n.wid/2+0.8){invuln=time+4;car.v=0;violate('crash');}
+    if(active&&along>-3&&along<n.hl+2.6&&lat<n.wid/2+1.0&&n.v>0.3){n.v=0;}                    // never drive into the player
   }
 }
 
@@ -1118,10 +1139,10 @@ function pathS(p){const k=p.ed.indexOf(car.e);return k<0?null:p.cum[k]+car.s;}
 function buildEvents(){
   MAINP=mkPath(['W0-A1','A1-A2','A2-O1','O1-A3','A3-A4','A4-A5']);STP=mkPath(['S0-S1','S1-S2','S2-S3','S3-S4','S4-S5']);
   // broken-down car on 桜通り, westbound lane between 小学校前 and 公園前
-  {const e=EK['N3-N4'],s=e.len*0.55,q=edgePos(e,s,-e.w/2);brokenCar=makeVehicle('car',0x7d8791);brokenCar.G.position.set(q.x,q.y,q.z);brokenCar.G.rotation.y=yawOf(-q.tx,-q.tz);OBST.push({x:q.x,z:q.z,r:1.9});e.closedDir=-1;obstZone={e,s,dir:-1};
+  {const e=EK['N3-N4'],s=e.len*0.55,q=edgePos(e,s,-e.w/2);brokenCar=makeVehicle('car',0x7d8791);brokenCar.G.position.set(q.x,q.y,q.z);brokenCar.G.rotation.y=yawOf(-q.tx,-q.tz);STATB.push(q.x,q.z,-q.tx,-q.tz,2.15,0.85);e.closedDir=-1;obstZone={e,s,dir:-1};
     const t=edgePos(e,s+16,-e.w/2),tri=cv(64,64,c=>{c.beginPath();c.moveTo(32,6);c.lineTo(60,56);c.lineTo(4,56);c.closePath();c.strokeStyle='#e0241b';c.lineWidth=9;c.lineJoin='round';c.stroke();});signPost(tri,0.55,0.55,t.x,t.y+0.1,t.z,-t.tx,-t.tz,0.05,null,true);}
   // school road (東本町 → 小学校前): a parked van, a child runs out from behind it
-  {const e=EK['A4-N4'],s=e.len*0.5,v=edgePos(e,s-8.5,e.w-0.95),van=makeVehicle('van',0xb9bdc2);van.G.position.set(v.x,v.y,v.z);van.G.rotation.y=yawOf(v.tx,v.tz);OBST.push({x:v.x,z:v.z,r:1.7});
+  {const e=EK['A4-N4'],s=e.len*0.5,v=edgePos(e,s-8.5,e.w-0.95),van=makeVehicle('van',0xb9bdc2);van.G.position.set(v.x,v.y,v.z);van.G.rotation.y=yawOf(v.tx,v.tz);STATB.push(v.x,v.z,v.tx,v.tz,2.25,0.9);
     const G=new THREE.Group();G.userData.dyn=true;put(G,new THREE.CylinderGeometry(0.15,0.18,0.75,8),L(0xf2c230),0,0.5,0);put(G,new THREE.SphereGeometry(0.15,10,8),L(0xe8c4a0),0,1.03,0);put(G,new THREE.BoxGeometry(0.3,0.3,0.14),L(0xb3272d),0,0.6,0.16);G.visible=false;scene.add(G);
     const bg=new THREE.Group();bg.userData.dyn=true;put(bg,new THREE.SphereGeometry(0.16,10,8),L(0xe0241b),0,0.2,0);bg.visible=false;scene.add(bg);child={G,ball:bg,e,s,on:false,t:0,cool:0};
     const sc=cv(256,256,c=>{c.translate(128,128);c.rotate(Math.PI/4);c.fillStyle='#f6c400';c.fillRect(-84,-84,168,168);c.strokeStyle='#111';c.lineWidth=7;c.strokeRect(-76,-76,152,152);c.rotate(-Math.PI/4);c.fillStyle='#111';for(const q of[[-22,1.0],[20,0.8]]){c.beginPath();c.arc(q[0],-36*q[1],13*q[1],0,7);c.fill();c.fillRect(q[0]-10*q[1],-22*q[1],20*q[1],46*q[1]);}});
@@ -1146,6 +1167,16 @@ function buildEvents(){
 function parkGarage(){const e=gar.e,q=edgePos(e,gar.s0,-e.w-5.2),n=gar.n;n.parked=true;n.e=e;n.dir=-1;n.s=gar.s0;n.u=-e.w-5.2;n.v=0;n.x=q.x;n.z=q.z;n.hx=q.tz;n.hz=-q.tx;n.sig=null;n.bez=null;n.next=null;n.mesh.position.set(q.x,q.y,q.z);n.mesh.rotation.y=yawOf(n.hx,n.hz);n.mesh.visible=true;gar.phase=0;}
 function resetEvents(){if(!gar.n)gar.n=addNpc('car',{e:gar.e,dir:-1,s:gar.s0,k:0,vf:0.8,color:0x9c2f2f});parkGarage();gar.cool=0;tram.s=60;tram.dir=1;tram.v=0;tram.dwell=0;tram.done=-1;tram.turnT=0;
   child.on=false;child.G.visible=child.ball.visible=false;child.cool=0;moto.on=false;moto.veh.G.visible=false;moto.cool=0;if(emerg.veh)emerg.veh.G.visible=false;emerg={on:false,until:-99,cool:mode==='free'?40:0,n:emerg.n||0,nodes:MAINP.nodes,near:()=>false};evHint=null;bikeNpc.n.s=STP.cum[1]+30;bikeNpc.n.v=0;}
+// solid obstacles and vehicles near the player, as flat list [x,z,hx,hz,halfLength,halfWidth]
+const SOL=[],STATB=[];                                // STATB: parked vehicles as boxes
+function solids(){SOL.length=0;const add=(x,z,hx,hz,hl,hw)=>{if(Math.abs(x-car.x)+Math.abs(z-car.z)<hl+14)SOL.push(x,z,hx,hz,hl,hw);};
+  for(let i=0;i<STATB.length;i+=6)add(STATB[i],STATB[i+1],STATB[i+2],STATB[i+3],STATB[i+4],STATB[i+5]);
+  for(const n of npcs)if(n.mesh.visible)add(n.x,n.z,n.hx,n.hz,n.hl,n.wid/2);const b=bikeNpc.n;add(b.x,b.z,b.hx,b.hz,0.85,0.3);
+  if(tram.veh)add(tram.x,tram.z,tram.hx||1,tram.hz||0,6.5,1.15);if(moto.on)add(moto.x,moto.z,moto.hx,moto.hz,1,0.35);if(emerg.on)add(emerg.x,emerg.z,emerg.hx,emerg.hz,emerg.veh.hl,emerg.veh.wid/2);return SOL;}
+// how deep the car (three circles along its length) is inside any obstacle at this pose; 0 = clear
+function depthAt(x,z,a,S){const fx=Math.sin(a),fz=-Math.cos(a);let d=0;
+  for(const k of[-1.35,0,1.35]){const px=x+fx*k,pz=z+fz*k;for(const o of OBST){const q=o.r+0.8-Math.hypot(px-o.x,pz-o.z);if(q>d)d=q;}
+    for(let i=0;i<S.length;i+=6){const rx=px-S[i],rz=pz-S[i+1],q=Math.min(S[i+4]+0.8-Math.abs(rx*S[i+2]+rz*S[i+3]),S[i+5]+0.8-Math.abs(rx*S[i+3]-rz*S[i+2]));if(q>d)d=q;}}return d;}
 function hitObst(x,z,a){const fx=Math.sin(a),fz=-Math.cos(a);for(const o of OBST)for(const k of[-1.5,0,1.5])if(Math.hypot(x+fx*k-o.x,z+fz*k-o.z)<o.r+0.75)return true;return false;}
 function hitVehicle(veh,x,z,hx,hz){const rx=car.x-x,rz=car.z-z,al=rx*hx+rz*hz,lt=Math.abs(rx*hz-rz*hx);return Math.abs(al)<veh.hl+1.5&&lt<veh.wid/2+0.8;}
 function pathSignalGap(p,s,hl){ // distance to the next red light on a path
@@ -1166,16 +1197,15 @@ function updateEvents(dt){
     const ps=pathS(p);if(ps!=null&&car.dir===1&&ps-b.s>1&&ps-b.s<9&&car.u>0.8)vt=Math.min(vt,Math.max(0,car.v-0.5));
     b.v+=clamp(vt-b.v,-5*dt,1.5*dt);b.s+=b.v*dt;if(b.s>p.len-12)b.s=8;const q=pathPos(p,b.s,ee=>ee.w-0.65);b.x=q.x;b.z=q.z;b.hx=q.tx;b.hz=q.tz;b.e=null;b.u=2.85;b.veh.G.position.set(q.x,q.y,q.z);b.veh.G.rotation.y=yawOf(q.tx,q.tz);
     if(drv){const rel=(car.x-b.x)*b.hx+(car.z-b.z)*b.hz,lt=Math.abs((car.x-b.x)*b.hz-(car.z-b.z)*b.hx);if(rel>-28&&rel<3&&lt<4.5&&fx*b.hx+fz*b.hz>0.5)evHint='hBike';
-      if(Math.abs(rel)<2.6&&lt-1.15<0.8&&lt<3&&car.v>b.v+1.5)violate('sidegap');if(invuln<time&&Math.abs(rel)<2.4&&lt<1.0){invuln=time+4;car.v=0;violate('crash');}}}
+      if(Math.abs(rel)<2.6&&lt-1.15<0.8&&lt<3&&car.v>b.v+1.5)violate('sidegap');}}
   // --- motorcycle in the left-rear blind spot on 中央通り before 東本町
   const ms=pathS(MAINP),onMain=ms!=null&&car.dir===1,sA4=MAINP.cum[5];
   if(!moto.on){if(drv&&time>moto.cool&&onMain&&ms>sA4-150&&ms<sA4-120&&car.v>3&&!emerg.on){moto.on=true;moto.s=ms-11;moto.v=car.v;moto.phase=0;moto.flag=false;moto.pu=car.u;moto.cool=mode==='free'?time+90:1e9;moto.veh.G.visible=true;}}
   else{const m=moto,rel=m.s-(ms==null?-999:ms);let vt;if(m.phase===0){vt=clamp(car.v+((ms||0)-5.2-m.s)*1.6,0,17);if(!onMain||ms>sA4-48)m.phase=1;}else vt=Math.max(Math.abs(car.v)+4,10);
     const g=pathSignalGap(MAINP,m.s,1);if(g<40)vt=Math.min(vt,g<0.3?0:Math.sqrt(4.4*g));if(onMain&&car.u>3.3&&rel<-1.5&&rel>-14)vt=Math.min(vt,Math.max(0,car.v-1));
-    const br=vt<m.v-0.05;m.v+=clamp(vt-m.v,-7*dt,3.2*dt);m.s+=m.v*dt;const q=pathPos(MAINP,m.s,6.05);m.veh.G.position.set(q.x,q.y,q.z);m.veh.G.rotation.y=yawOf(q.tx,q.tz);vehLights(m.veh,br,null,flash);
+    const br=vt<m.v-0.05;m.v+=clamp(vt-m.v,-7*dt,3.2*dt);m.s+=m.v*dt;const q=pathPos(MAINP,m.s,6.05);m.x=q.x;m.z=q.z;m.hx=q.tx;m.hz=q.tz;m.veh.G.position.set(q.x,q.y,q.z);m.veh.G.rotation.y=yawOf(q.tx,q.tz);vehLights(m.veh,br,null,flash);
     if(drv&&onMain&&m.phase===0)evHint='hMoto';
     if(drv&&onMain&&!m.flag&&m.pu<=3.4&&car.u>3.4&&rel>-9&&rel<1.5){m.flag=true;violate('makikomi');}m.pu=car.u;
-    if(drv&&invuln<time&&hitVehicle(m.veh,q.x,q.z,q.tx,q.tz)){invuln=time+4;car.v=0;violate('crash');}
     if(m.s>MAINP.len-6){m.on=false;m.veh.G.visible=false;}}
   // --- emergency vehicle coming up from behind on 中央通り
   if(!emerg.on){const sA2=MAINP.cum[2],trig=mode==='course'?(ms>sA2+24&&ms<sA2+44):(time>emerg.cool&&ms>120&&ms<MAINP.len-260);
@@ -1183,10 +1213,9 @@ function updateEvents(dt){
       emerg.near=n=>{const k=MAINP.ed.indexOf(n.e);if(k<0)return false;const r=MAINP.cum[k]+n.s-emerg.s;return r>-6&&r<95;};emerg.veh.G.visible=true;}}
   else{const em=emerg,rel=(ms==null?-999:ms)-em.s;let vt=16.5;
     if(onMain&&rel>0&&rel<45&&Math.abs(car.u-em.u)<2.1){vt=Math.min(vt,Math.max(Math.abs(car.v),Math.sqrt(6*Math.max(0,rel-9))));if(rel<18){em.block+=dt;if(em.block>3.5){em.ut=-1.75;if(!em.flag){em.flag=true;violate('emerg');}}}}
-    em.u+=clamp(em.ut-em.u,-2*dt,2*dt);em.v+=clamp(vt-em.v,-8*dt,3*dt);em.s+=em.v*dt;const q=pathPos(MAINP,em.s,em.u);em.veh.G.position.set(q.x,q.y,q.z);em.veh.G.rotation.y=yawOf(q.tx,q.tz);vehLights(em.veh,vt<em.v-0.1,null,flash);
+    em.u+=clamp(em.ut-em.u,-2*dt,2*dt);em.v+=clamp(vt-em.v,-8*dt,3*dt);em.s+=em.v*dt;const q=pathPos(MAINP,em.s,em.u);em.x=q.x;em.z=q.z;em.hx=q.tx;em.hz=q.tz;em.veh.G.position.set(q.x,q.y,q.z);em.veh.G.rotation.y=yawOf(q.tx,q.tz);vehLights(em.veh,vt<em.v-0.1,null,flash);
     const dist=Math.hypot(car.x-q.x,car.z-q.z);if(drv&&onMain&&rel>-10&&rel<110)evHint='hEmerg';
     em.sirT-=dt;if(em.sirT<=0){em.sirT=0.55;if(drv&&dist<170)beep(Math.floor(time/0.55)%2?960:770,0.5,0.05*Math.max(0.15,1-dist/170),'sine');}
-    if(drv&&invuln<time&&hitVehicle(em.veh,q.x,q.z,q.tx,q.tz)){invuln=time+4;car.v=0;violate('crash');}
     if(em.s>MAINP.len-4||rel<-160){em.veh.G.visible=false;emerg={on:false,until:time,cool:time+110,n:em.n,nodes:MAINP.nodes,near:()=>false};}}
   vehLights(PAinfo.truck,false,'H',flash);
   // --- car pulling out of a driveway in front of the player
@@ -1203,7 +1232,7 @@ function updateEvents(dt){
       const end=t.dir>0?p.len-10-t.s:t.s-10;if(end<40)vt=Math.min(vt,end<0.4?0:Math.sqrt(2.4*end));if(end<0.4&&t.v<0.1)t.turnT=7;
       for(let k=0;k<p.ed.length;k++){const n=t.dir>0?p.ed[k].b:p.ed[k].a,ns=t.dir>0?p.cum[k+1]:p.cum[k],g=(ns-t.s)*t.dir-(n.r+2.4)-hl;if(g>-1&&g<50&&n.ctrl==='sig'&&sigState(n,p.ed[k])!=='g')vt=Math.min(vt,g<0.4?0:Math.sqrt(2.4*g));}
       const ps=pathS(p);if(ps!=null&&Math.abs(car.u-t.dir*1.3)<1.7){const g=(ps-t.s)*t.dir-hl-2.4;if(g>-1&&g<26){vt=Math.min(vt,g<1?0:Math.sqrt(2.4*g));if(drv&&g<14&&Math.floor(time*2)%2===0&&t.bell!==Math.floor(time*2)){t.bell=Math.floor(time*2);beep(1250,0.12,0.04,'triangle');}}}}
-    t.v+=clamp(vt-t.v,-2.2*dt,0.9*dt);t.s+=t.dir*t.v*dt;const q=pathPos(p,t.s,t.dir*1.3);t.x=q.x;t.z=q.z;t.e=q.e;t.es=q.es;t.veh.G.position.set(q.x,q.y,q.z);t.veh.G.rotation.y=yawOf(q.tx*t.dir,q.tz*t.dir);vehLights(t.veh,t.v<0.3,null,flash);
+    t.v+=clamp(vt-t.v,-2.2*dt,0.9*dt);t.s+=t.dir*t.v*dt;const q=pathPos(p,t.s,t.dir*1.3);t.x=q.x;t.z=q.z;t.hx=q.tx*t.dir;t.hz=q.tz*t.dir;t.e=q.e;t.es=q.es;t.veh.G.position.set(q.x,q.y,q.z);t.veh.G.rotation.y=yawOf(q.tx*t.dir,q.tz*t.dir);vehLights(t.veh,t.v<0.3,null,flash);
     // passengers walk between the pavement and the tram at the stop without an island
     const boarding=t.dwell>0&&t.stop===1;t.pax.forEach((G,k)=>{G.visible=boarding;if(boarding){const ph=clamp((11-t.dwell-1-k*1.2)/4,0,1),W=t.e.w,u=t.dir*lerp(W+1.4,2.7,k===1?1-ph:ph),a=pathPos(p,t.s+(k-1)*2.6,u);G.position.set(a.x,a.y+0.08,a.z);G.rotation.y=yawOf(a.tz,-a.tx);G.umb.visible=env.weather!=='clear';
         if(drv&&invuln<time&&Math.abs(u)<W-0.6&&Math.hypot(car.x+fx*1.3-a.x,car.z+fz*1.3-a.z)<1.3&&Math.abs(car.v)>0.4){invuln=time+4;car.v=0;violate('hitped');}}});
@@ -1211,7 +1240,7 @@ function updateEvents(dt){
       if(t.dwell>0&&t.stop===1){if(rel<-hl&&rel>-hl-45)evHint='hTramStop';if(t.prel!=null&&t.prel<=-hl-1.5&&rel>-hl-1.5&&car.v>0.5)violate('tramstop');}
       else if(t.dwell>0&&t.stop===0){if(rel<hl+3&&rel>-hl-40)evHint='hTramIsland';if(Math.abs(rel)<hl+3&&Math.abs(car.v)*3.6>17)violate('tramslow');}
       t.prel=rel;}else t.prel=null;
-    if(drv&&invuln<time&&hitVehicle(t.veh,t.x,t.z,q.tx*t.dir,q.tz*t.dir)){invuln=time+4;car.v=0;violate('crash');}}
+}
 }
 
 /* ---------- environment: time of day, weather, lights, wipers ---------- */
@@ -1323,7 +1352,7 @@ function hud(dt){
   $('bL').className='blk'+(blink==='L'?' on'+(blinkOn?' tick':''):'');$('bR').className='blk'+(blink==='R'?' on'+(blinkOn?' tick':''):'');
   setTxt('gear',car.gear);$('gear').classList.toggle('rev',car.gear==='R');$('hb').classList.toggle('on',car.hb);
   if(TOUCH){setTxt('spd2',kmh);$('spd2').classList.toggle('over',kmh>curLimit+2);setTxt('gearLbl',car.gear);$('gearBtn').classList.toggle('rev',car.gear==='R');$('hbBtn').classList.toggle('on',car.hb);
-    placeStalks();
+    placeStalks();$('tbL').className=$('bL').className;$('tbR').className=$('bR').className;
     const gi=GEARS.indexOf(car.gear),sp=$('gearStrip').children;for(let q=0;q<4;q++)sp[q].className=q===gi?'on':'';}$('dash').classList.toggle('fp',camMode===0);setTxt('lightBtn',T(env.lights?'lightOn':'lightOff'));$('lightBtn').classList.toggle('lit',env.lights);$('map').classList.toggle('fp',camMode===0);
 }
 let simN=1;const camV=new THREE.Vector3();let dbgCam=null;
@@ -1405,18 +1434,23 @@ document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{$({course:'mo
 gb.addEventListener('pointerdown',e=>{e.preventDefault();if(state!=='drive')return;gid=e.pointerId;gy=e.clientY;strip.hidden=false;try{gb.setPointerCapture(gid);}catch(_){}});
 gb.addEventListener('pointermove',e=>{if(e.pointerId!==gid)return;while(e.clientY-gy>30){shiftGear(1,false);gy+=30;}while(e.clientY-gy<-30){shiftGear(-1,false);gy-=30;}});
 const up=e=>{if(e.pointerId===gid){gid=null;strip.hidden=true;}};gb.addEventListener('pointerup',up);gb.addEventListener('pointercancel',up);gb.addEventListener('contextmenu',e=>e.preventDefault());}
-$('lightBtn').onclick=toggleLights;$('hbBtn').onclick=()=>{if(state==='drive')toggleHb();};
+$('lightBtn').onclick=toggleLights;const press=(id,fn)=>{const el=$(id);el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(state==='drive')fn();});el.addEventListener('contextmenu',e=>e.preventDefault());};
+press('hbBtn',toggleHb);press('tbL',()=>{toggleBlink('L');buzz();});press('tbR',()=>{toggleBlink('R');buzz();});
 stick('stR',(x,y)=>{inp.steerA=dz(x,0.14);inp.gas=Math.max(0,dz(-y,0.18));inp.brake=Math.max(0,dz(y,0.18));},()=>{camMode=1-camMode;});}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true);});
 $('hb').onclick=toggleHb;$('bL').onclick=()=>toggleBlink('L');$('bR').onclick=()=>toggleBlink('R');$('gear').onclick=toggleGear;
 $('camBtn').onclick=()=>{camMode=1-camMode;};$('sndBtn').onclick=$('pSnd').onclick=()=>{soundOn=!soundOn;applyLang();};$('pEnd').onclick=()=>{if(state==='pause'){$('pause').hidden=true;state='drive';finish();}};
 $('endBtn').onclick=()=>{if(state==='drive')finish();};$('pauseBtn').onclick=()=>setPause(true);$('resumeBtn').onclick=()=>setPause(false);$('pRestart').onclick=()=>{$('pause').hidden=true;begin();};$('pMenu').onclick=()=>{$('pause').hidden=true;$('hud').hidden=true;resetGame();state='menu';$('start').hidden=false;};
+function goFull(on){const d=document,el=d.documentElement;try{if(on===false||(on==null&&(d.fullscreenElement||d.webkitFullscreenElement))){(d.exitFullscreen||d.webkitExitFullscreen).call(d);return;}
+    const r=(el.requestFullscreen||el.webkitRequestFullscreen);if(!r){note(T('fsNo'));return;}const pr=r.call(el,{navigationUI:'hide'});if(pr&&pr.then)pr.then(()=>{try{screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}).catch(()=>{if(on==null)note(T('fsNo'));});}catch(e){if(on==null)note(T('fsNo'));}}
+$('fsBtn').onclick=()=>goFull();
 function toggleLights(){env.lights=!env.lights;beep(700,0.03,0.03);}
 function begin(){
   mode=$('modeFree').checked?'free':$('modeHw').checked?'hw':'course';hintsOn=$('hintsOn').checked;
   setEnv(document.querySelector('input[name=tod]:checked').value,document.querySelector('input[name=wx]:checked').value);resetGame();for(const k in inp)inp[k]=0;
   try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume();}catch(e){}
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});}catch(e){}
+  if(TOUCH&&!document.fullscreenElement)goFull(true);
   if(TOUCH&&window.innerHeight>window.innerWidth)setTimeout(()=>note(T('rotate')),400);
   $('start').hidden=true;$('result').hidden=true;$('hud').hidden=false;lastHint=null;$('hint').hidden=true;state='drive';canvas.focus&&canvas.focus();
 }

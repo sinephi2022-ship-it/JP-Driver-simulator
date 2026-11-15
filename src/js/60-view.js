@@ -55,7 +55,7 @@ function hud(dt){
   $('bL').className='blk'+(blink==='L'?' on'+(blinkOn?' tick':''):'');$('bR').className='blk'+(blink==='R'?' on'+(blinkOn?' tick':''):'');
   setTxt('gear',car.gear);$('gear').classList.toggle('rev',car.gear==='R');$('hb').classList.toggle('on',car.hb);
   if(TOUCH){setTxt('spd2',kmh);$('spd2').classList.toggle('over',kmh>curLimit+2);setTxt('gearLbl',car.gear);$('gearBtn').classList.toggle('rev',car.gear==='R');$('hbBtn').classList.toggle('on',car.hb);
-    placeStalks();
+    placeStalks();$('tbL').className=$('bL').className;$('tbR').className=$('bR').className;
     const gi=GEARS.indexOf(car.gear),sp=$('gearStrip').children;for(let q=0;q<4;q++)sp[q].className=q===gi?'on':'';}$('dash').classList.toggle('fp',camMode===0);setTxt('lightBtn',T(env.lights?'lightOn':'lightOff'));$('lightBtn').classList.toggle('lit',env.lights);$('map').classList.toggle('fp',camMode===0);
 }
 let simN=1;const camV=new THREE.Vector3();let dbgCam=null;

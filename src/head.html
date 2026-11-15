@@ -90,11 +90,12 @@ button:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-o
 #gearBtn{width:70px;height:70px;border-radius:16px;background:var(--panel);border:2px solid var(--go);font:700 32px/1 var(--f-num);touch-action:none;display:grid;place-items:center;position:relative}
 #gearBtn.rev{border-color:var(--amber);color:var(--amber)}
 #gearBtn i{position:absolute;right:6px;top:5px;font:400 12px/1 sans-serif;color:var(--muted)}
-#hbBtn{width:70px;height:46px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font:700 14px/1 var(--f-display)}
+#hbBtn{touch-action:none;width:70px;height:46px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font:700 14px/1 var(--f-display)}
 #hbBtn.on{background:var(--sign-red);border-color:var(--sign-red);color:#fff}
 #gearStrip{position:absolute;bottom:100%;left:0;margin-bottom:8px;width:70px;display:grid;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 #gearStrip span{height:36px;display:grid;place-items:center;font:700 20px/1 var(--f-num);color:var(--muted)}
 #gearStrip span.on{background:var(--go);color:#06241b}
+.bcol{display:flex;gap:10px;pointer-events:auto;align-self:flex-end}.bcol .blk{width:58px;height:58px;background:var(--panel);touch-action:none}
 .scol{display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:auto}
 .tspd{display:none;text-align:center;min-width:46px}.tspd b{font:700 30px/1 var(--f-num);font-variant-numeric:tabular-nums;display:block}.tspd b.over{color:var(--sign-red)}.tspd small{font-size:10px;color:var(--muted)}
 .stick{width:132px;height:132px;border-radius:50%;background:var(--panel);border:1px solid var(--line);position:relative;touch-action:none}
@@ -190,6 +191,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
       <div class="side">
         <canvas id="map" width="300" height="230"></canvas>
         <div class="row" style="gap:6px;justify-content:flex-end">
+          <button class="mini" id="fsBtn" type="button" data-t="fsBtn"></button>
           <button class="mini" id="mapBtn" type="button" data-t="mapBtn"></button>
           <button class="mini" id="lightBtn" type="button"></button>
           <button class="mini" id="sndBtn" type="button"></button>
@@ -215,6 +217,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
         <button id="gearBtn" type="button" aria-label="gear"><b id="gearLbl">P</b><i>↕</i></button>
         <button id="hbBtn" type="button" data-t="hbLbl"></button>
       </div>
+      <div class="bcol"><button class="blk" id="tbL" type="button" aria-label="left signal">◀</button><button class="blk" id="tbR" type="button" aria-label="right signal">▶</button></div>
       <div style="flex:1"></div>
       <div class="scol"><div class="stick" id="stR"><span class="u" data-t="gas"></span><span class="d" data-t="brake"></span><span class="lft">⇦</span><span class="rgt">⇨</span><div class="nub"></div></div><div class="cap" data-t="capR"></div></div>
     </div>
@@ -257,6 +260,7 @@ kbd{font:600 12px/1 var(--f-num);background:#243044;border:1px solid var(--line)
         <li><kbd>MOUSE</kbd> <span data-t="kDrag"></span></li>
       </ul>
       <p class="note touchOnly" data-t="tHelp"></p>
+      <p class="note touchOnly" data-t="fsHelp"></p>
       <p class="note" data-t="creep"></p>
       <div class="row"><button class="cta" id="startBtn" type="button" data-t="start"></button></div>
     </div>

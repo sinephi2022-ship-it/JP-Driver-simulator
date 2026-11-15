@@ -85,6 +85,17 @@ function buildWorld(){
         if(e.kind==='main'){const b=edgePos(e,e.a===n?D+60:e.len-D-60,0);if(e.len>150)ground(busRoad,2.1,8.5,b.x+lx*5.25,b.y+0.11,b.z+lz*5.25,yaw);}}
       if(e.oneway&&e.kind==='narrow1'){const o=edgePos(e,e.len-n.r-1,0);for(const sd of[-1,1])signPost(noEntry,0.8,0.8,o.x+o.tz*sd*(e.w+0.7),o.y,o.z-o.tx*sd*(e.w+0.7),-o.tx,-o.tz,2.2,backRound);}
     }}
+  // direction boards before the signalled junctions
+  const dest=(n,f)=>{let m=f.a===n?f.b:f.a,pv=f;for(let q=0;q<8;q++){if(m.id==='IC0'||m.id==='VI'||pv.kind==='hw')return'高速';if(m.name)return m.name;if(m.ed.length!==2)break;pv=m.ed[0]===pv?m.ed[1]:m.ed[0];m=pv.a===m?pv.b:pv.a;}return m.name||'';};
+  for(const k in ND){const n=ND[k];if(n.ctrl!=='sig'||n.ed.length<3)continue;for(const e of n.ed){if(e.oneway&&e.b!==n||e.len<n.r+70)continue;const d={};for(const f of n.ed){if(f===e||f.oneway&&f.b===n)continue;const tc=turnClass(n,e,f);if(tc!=='U'&&!d[tc])d[tc]=dest(n,f);}
+      const t=boardTex(360,220,'#1c4c9c',c=>{c.strokeStyle='#fff';c.lineWidth=13;c.beginPath();if(d.S){c.moveTo(180,206);c.lineTo(180,82);}else{c.moveTo(180,206);c.lineTo(180,150);}if(d.L){c.moveTo(74,150);c.lineTo(186,150);}if(d.R){c.moveTo(174,150);c.lineTo(286,150);}c.stroke();
+        const head=(x,y,dx,dy)=>{c.beginPath();c.moveTo(x+dx*22,y+dy*22);c.lineTo(x-dy*17,y+dx*17);c.lineTo(x+dy*17,y-dx*17);c.closePath();c.fill();};if(d.S)head(180,82,0,-1);if(d.L)head(74,150,-1,0);if(d.R)head(286,150,1,0);
+        const txt=(s,x,y)=>{if(!s)return;c.font='900 '+(s.length>4?22:28)+'px '+FONT;if(s==='高速'){c.fillStyle='#0f7a4a';c.fillRect(x-36,y-17,72,34);c.fillStyle='#fff';}c.fillText(s,x,y);};txt(d.S,180,36);txt(d.L,82,108);txt(d.R,278,108);});
+      const aw=away(n,e),tx=-aw[0],tz=-aw[1],D=n.r+42,q=edgePos(e,e.a===n?D:e.len-D,0),off=e.w+(e.walk?3.3:1.6);signPost(t,3.1,1.9,q.x+tz*off,q.y,q.z-tx*off,tx,tz,4.2);}}
+  // bus stops on 中央通り (the buses pull in and wait here)
+  {const st=boardTex(128,128,'#1c4c9c',c=>{c.font='900 34px '+FONT;c.fillText('バス',64,44);c.fillText('のりば',64,86);}),sh=L(0x8fa1ad);
+    for(const key of['A1-A2','A3-A4'])for(const dir of[1,-1]){const e=EK[key],s=e.len*(dir>0?0.45:0.55);e.feat.push({t:'bus',s,dir});const q=edgePos(e,s+dir*5,dir*(e.w+1.2)),G=new THREE.Group();signPost(st,0.7,0.7,q.x,q.y+0.2,q.z,q.tx*dir,q.tz*dir,2.3);
+      const a=edgePos(e,s-dir*2,dir*(e.w+2.0));G.position.set(a.x,a.y+0.2,a.z);G.rotation.y=yawOf(a.tx,a.tz);scene.add(G);box(sh,1.5,0.12,4.4,0,2.5,0,G);for(const z of[-2,2])box(poleMat,0.08,2.4,0.08,dir*0.6,1.25,z,G);}}
   // speed limit signs a little after each junction, both directions
   for(const e of ED){if(e.kind==='hw'||e.kind==='ramp'||e.len<70)continue;for(const d of e.oneway?[1]:[1,-1]){const n0=d>0?e.a:e.b,q=edgePos(e,d>0?n0.r+15:e.len-n0.r-15,0),tx=q.tx*d,tz=q.tz*d;signPost(roundSignTex(e.limit),0.85,0.85,q.x+tz*(e.w+(e.walk?1.0:0.8)),q.y,q.z-tx*(e.w+(e.walk?1.0:0.8)),tx,tz,2.3,backRound);}}
   // --- pedestrian crossing in the middle of 駅前通り (S1–S2)

@@ -4,7 +4,7 @@ function laneU(e,dir,k){const inner=e.inner||0,lw=(e.w-inner)/e.lanes;return e.o
 function placeNpc(n){const q=edgePos(n.e,n.s,n.u);n.x=q.x;n.z=q.z;n.y=q.y;n.hx=q.tx*n.dir;n.hz=q.tz*n.dir;n.mesh.position.set(q.x,q.y,q.z);n.mesh.rotation.y=yawOf(n.hx,n.hz);}
 function addNpc(kind,o){const veh=makeVehicle(kind,o.color!=null?o.color:VEH_COL[npcs.length%VEH_COL.length]);veh.G.rotation.order='YXZ';
   const n=Object.assign({kind,veh,mesh:veh.G,len:veh.len,hl:veh.hl,wid:veh.wid,v:0,k:0},o);n.init={e:n.e,dir:n.dir,s:n.s,k:n.k};npcs.push(n);resetNpc(n);return n;}
-function resetNpc(n){Object.assign(n,n.init);n.u=n.ut=laneU(n.e,n.dir,n.k);n.v=n.e.kind==='hw'?(n.vmaxF||20)*0.9:0;n.next=null;n.bez=null;n.wait=0;n.cleared=null;n.sig=null;n.brake=false;n.ovT=0;placeNpc(n);}
+function resetNpc(n){Object.assign(n,n.init);n.u=n.ut=laneU(n.e,n.dir,n.k);n.v=n.e.kind==='hw'?(n.vmaxF||20)*0.9:0;n.next=null;n.bez=null;n.wait=0;n.cleared=null;n.sig=null;n.brake=false;n.ovT=0;n.served=null;n.dwell=0;n.sigT=0;placeNpc(n);}
 const drivable=e=>!e.quiet&&e.kind!=='ramp';
 function spawnTraffic(R){
   const pool=ED.filter(e=>drivable(e)&&e.kind!=='hw'&&e.len>70&&!e.toll);let c=0;
@@ -24,7 +24,7 @@ function laneFree(n,u,back,front){for(const o of npcs)if(o!==n&&o.e===n.e&&!o.be
   if(car.e===n.e&&Math.abs(car.u-u)<2.2){const rel=(car.s-n.s)*n.dir;if(rel>-back-6&&rel<front+4)return false;}return true;}
 function updateTraffic(dt){
   ped.npcThreat=false;const flash=Math.floor(time*2.7)%2===0,active=state!=='menu';
-  for(const n of npcs){if(n.parked){vehLights(n.veh,false,n.sig,flash);if(state==='drive'&&invuln<time&&hitVehicle(n.veh,n.x,n.z,n.hx,n.hz)){invuln=time+4;car.v=0;violate('crash');}continue;}
+  for(const n of npcs){if(n.parked){vehLights(n.veh,false,n.sig,flash);continue;}
     const e=n.e,hwy=e.kind==='hw',lim=(n.vmaxF||e.limit/3.6*(n.vf||0.85))*env.npcCap;
     // far from the player: keep moving cheaply, skip the detailed logic for most frames
     const pd=Math.abs(n.x-car.x)+Math.abs(n.z-car.z);n.mesh.visible=pd<420;
@@ -40,6 +40,8 @@ function updateTraffic(dt){
         else if(n.next&&n.next.dead&&D<30)cap=Math.min(cap,5);}
       else if(D<1.5){const f=node.ed[0]===e?node.ed[1]:node.ed[0],fd=f.a===node?1:-1;if(f.oneway&&fd<0||!drivable(f)&&!f.toll)n.next={dead:true};else{n.e=f;n.dir=fd;n.s=fd>0?0.01:f.len-0.01;n.k=Math.min(n.k,f.lanes-1);n.u=n.ut=laneU(f,fd,n.k);continue;}}
       if(tram.dwell>0&&tram.stop===1&&e===tram.e&&n.dir===tram.dir){const rel=(tram.es-n.s)*n.dir-tram.veh.hl-n.hl-2.5;if(rel>-1)g=Math.min(g,rel);}
+      if(n.kind==='bus')for(const f of e.feat)if(f.t==='bus'&&f.dir===n.dir&&n.served!==f){const rel=(f.s-n.s)*n.dir-n.hl;if(rel<-1)continue;g=Math.min(g,rel);if(rel<32)sig='L';if(n.v<0.1&&rel<1.3){sig='H';n.dwell=(n.dwell||0)+dt;if(n.dwell>5.5){n.served=f;n.dwell=0;n.sigT=time+3.5;}}}
+      if(n.sigT>time)sig='R';
       for(const f of e.feat){const rel=(f.s-n.s)*n.dir-n.hl;if(f.t==='rail'&&rail.alarm&&rel-4.5>-1)g=Math.min(g,rel-4.5);if(f.t==='xwalk'&&ped.state!=='away'&&rel-3.5>-1){g=Math.min(g,rel-3.5);if(rel<30&&n.v>0.4)ped.npcThreat=true;}if(f.t==='toll'&&rel>0&&rel<25)cap=Math.min(cap,5.5);}
     }
     // vehicle ahead: same lane by distance along the road, and anything in the box straight ahead
@@ -69,6 +71,6 @@ function updateTraffic(dt){
           n.bez={e:f,dir:nx.dir,s:s2,u:u2,tc:nx.tc,t:0,x0:p0.x,z0:p0.z,y0:p0.y,x2:p2.x,z2:p2.z,y2:p2.y,cx:(p0.x+p0.tx*n.dir*h+p2.x-p2.tx*nx.dir*h)/2,cz:(p0.z+p0.tz*n.dir*h+p2.z-p2.tz*nx.dir*h)/2,len:Math.max(3,Math.hypot(p2.x-p0.x,p2.z-p0.z)*1.08)};n.k=k;n.ut=u2;}}
       else placeNpc(n);}
     if(n.mesh.visible)vehLights(n.veh,n.brake,n.sig,flash);
-    if(active&&state==='drive'&&invuln<time&&Math.abs(along)<n.hl+1.35&&lat<n.wid/2+0.8){invuln=time+4;car.v=0;violate('crash');}
+    if(active&&along>-3&&along<n.hl+2.6&&lat<n.wid/2+1.0&&n.v>0.3){n.v=0;}                    // never drive into the player
   }
 }

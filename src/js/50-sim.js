@@ -12,7 +12,8 @@ function drive(dt){
   car.steer+=clamp(target-car.steer,-rate,rate);car.steer=clamp(car.steer,-maxS,maxS);
   car.a+=car.v/2.6*Math.tan(car.steer)*dt;
   const nx=car.x+Math.sin(car.a)*car.v*dt,nz=car.z-Math.cos(car.a)*car.v*dt;
-  if(hitObst(nx,nz,car.a)){if(Math.abs(car.v)>1.2&&invuln<time){invuln=time+3;violate('crash');}car.v=0;}
+  const S=solids(),d1=depthAt(nx,nz,car.a,S);
+  if(d1>0&&d1>depthAt(car.x,car.z,car.a,S)+0.001){if(Math.abs(car.v)>1.2&&invuln<time){invuln=time+3;violate('crash');}car.v=0;}   // solid: cannot push further in, but can always back out
   else if(onRoad(nx,nz)){car.x=nx;car.z=nz;}
   else{if(onRoad(nx,car.z))car.x=nx;else if(onRoad(car.x,nz))car.z=nz;car.v*=Math.pow(0.05,dt);if(Math.abs(car.v)>0.8)violate('curb');}
   locatePlayer(dt);

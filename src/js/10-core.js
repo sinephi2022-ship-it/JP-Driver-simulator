@@ -19,7 +19,7 @@ const KIND={main:{w:7,lanes:2,limit:50,dist:'down',walk:1},city:{w:3.5,lanes:1,l
   tram:{w:6,lanes:1,limit:40,dist:'mid',walk:1,inner:2.5},hw:{w:3.5,lanes:2,limit:100,oneway:true},ramp:{w:2,lanes:1,limit:60,oneway:true,quiet:true}};
 function nd(id,x,z,name,ctrl,stops){ND[id]={id,x,z,name:name||null,ctrl:ctrl||null,stops:stops||[],ed:[],lamps:[]};}
 function ed(a,b,kind,mid,o){const e=Object.assign({i:ED.length,a:ND[a],b:ND[b],kind,mid:mid||[],key:a+'-'+b},KIND[kind],o||{});ED.push(e);ND[a].ed.push(e);ND[b].ed.push(e);return e;}
-nd('S0',-110,-82);nd('S1',120,-80,'駅西口','stop',['S0-S1','S1-S2']);nd('S2',340,-70,'駅前','sig');nd('S3',570,-60,'南町','sig');nd('S4',800,-52,'港入口','stop',['S3-S4','S4-S5']);nd('S5',1012,-48,'港','stop',['S4-S5']);nd('SS',346,95);
+nd('S0',-110,-82,'駅西','stop',['S0-S1']);nd('S1',120,-80,'駅西口','stop',['S0-S1','S1-S2']);nd('S2',340,-70,'駅前','sig');nd('S3',570,-60,'南町','sig');nd('S4',800,-52,'港入口','stop',['S3-S4','S4-S5']);nd('S5',1012,-48,'港','stop',['S4-S5','SS-S5']);nd('SS',346,95,'駅南','stop',['S2-SS']);
 nd('W0',-130,-296);nd('A1',100,-300,'西本町','sig');nd('A2',330,-310,'本町','sig');nd('O1',445,-306,'商店街');nd('A3',560,-300,'市役所前','sig');nd('A4',790,-280,'東本町','sig');nd('A5',1002,-250,'海岸通り','sig');
 nd('N1',90,-540,'緑ヶ丘','sig');nd('N2',320,-560,'桜町','sig');nd('O2',441,-556,null,'stop',['O3-O2']);nd('N3',550,-550,'公園前','sig');nd('N4',780,-530,'小学校前','stop',['A4-N4','N4-NE']);
 nd('O3',443,-430);nd('CM',556,-425,null,'stop',['O3-CM']);
@@ -29,6 +29,7 @@ nd('C1',1040,-500,'海水浴場');nd('C2',1000,-750,'北浜海岸','stop',['NE-C
 nd('VI',660,-2570);nd('V3',640,-2650,'山手IC入口','stop',['VI-V3']);nd('V1',480,-2760,'役場前');nd('V2',790,-2750,'道の駅','stop',['V5-V2']);nd('V4',400,-2980,'山手温泉');nd('V5',700,-3010,'棚田');
 ed('W0','A1','main');ed('A1','A2','main',[[215,-300]]);ed('A2','O1','main');ed('O1','A3','main');ed('A3','A4','main',[[675,-296]]);ed('A4','A5','main',[[900,-262]]);
 ed('S0','S1','city');ed('S1','S2','tram',[[230,-80]]);ed('S2','S3','tram',[[455,-62]]);ed('S3','S4','tram',[[685,-60]]);ed('S4','S5','city',[[905,-46]]);ed('S2','SS','city',[[348,10]],{limit:30});
+ed('W0','S0','city',[[-152,-190]],{dist:'res'});ed('S0','SS','city',[[-92,32],[120,102]],{dist:'res'});ed('SS','S5','city',[[620,114],[905,98],[990,38]],{dist:'sea'});   // outer ring: no dead ends
 ed('N1','N2','city',[[205,-556]],{dist:'res'});ed('N2','O2','city',null,{dist:'res'});ed('O2','N3','city',null,{dist:'res'});ed('N3','N4','city',[[665,-546]],{dist:'res'});
 ed('S1','A1','city',[[104,-190]]);ed('A1','N1','city',[[88,-420]],{dist:'res'});ed('S2','A2','city',[[338,-190]]);ed('A2','N2','city',[[322,-435]]);
 ed('S3','A3','city',[[568,-180]]);ed('A3','CM','city');ed('CM','N3','city');ed('S4','A4','city',[[798,-165]]);ed('A4','N4','city',[[788,-405]],{limit:30,dist:'res',school:true});
@@ -44,7 +45,7 @@ ed('V3','V1','rural',[[560,-2712]]);ed('V3','V2','rural',[[720,-2702]]);ed('V1',
 const EK={};                                           // edges by key, filled in buildNet
 const PLACES=[                                         // destinations: name, node, position of the building
   ['若葉駅','S2',340,-28],['市役所','A3',596,-338],['ワカバモール','A4',838,-322],['若葉小学校','N4',826,-490],['若葉団地','H1',-118,-712],['若葉寺','H2',96,-868],['中央公園','N3',500,-490],
-  ['若葉港','S5',1052,-18],['海水浴場','C1',1085,-505],['岬の灯台','C3',1104,-1012],['青葉峠 展望台','C4',968,-1302],['高速 若葉IC','IC0',600,-812],['道の駅 山手','V2',832,-2782],['山手町役場','V1',440,-2735],['山手温泉','V4',352,-3002],['棚田','V5',705,-3055]];
+  ['若葉港','S5',1068,-16],['海水浴場','C1',1085,-505],['岬の灯台','C3',1104,-1012],['青葉峠 展望台','C4',968,-1302],['高速 若葉IC','IC0',600,-812],['道の駅 山手','V2',832,-2782],['山手町役場','V1',440,-2735],['山手温泉','V4',352,-3002],['棚田','V5',705,-3055]];
 const COURSE=['S1','S2','A2','A3','A4','N4','N3','N2'];  // 検定コース: waypoints, the goal bay is after the last one
 let nav=null;
 function sigState(n,e){if(emerg.on&&emerg.nodes.has(n)){return e.kind==='main'?'g':'r';}const t=(time+n.off)%32,ph=n.phase[e.i];return ph===0?(t<12?'g':t<15?'y':'r'):(t<16?'r':t<28?'g':t<31?'y':'r');}
